@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+/* ── Light theme (base) ── */
+:root {
+  --text: #5c5a66;
+  --text-h: #12101a;
+  --bg: #f7f6f9;
+  --panel-bg: #fff;
+  --border: #e2e0e8;
+  --accent-border: rgba(91, 77, 255, 0.45);
+  --warning-text: #b45309;
+  --shadow:
+    rgba(15, 23, 42, 0.06) 0 4px 24px,
+    rgba(15, 23, 42, 0.04) 0 2px 8px;
+
+  --chart-capital: #5b4dff;
+  --chart-expenses: #dc2626;
+  --chart-return: #059669;
+  --chart-cross: #7c3aed;
+
+  --sans: 'DM Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  font: 16px/150% var(--sans);
+  letter-spacing: 0.01em;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Dark theme vars (reused by media query and attribute) ── */
+.dark-vars {
+  --text: #a8a4b5;
+  --text-h: #f4f2f8;
+  --bg: #0f0e14;
+  --panel-bg: #1a1822;
+  --border: #2f2c3a;
+  --warning-text: #fbbf24;
+  --shadow:
+    rgba(0, 0, 0, 0.35) 0 4px 24px,
+    rgba(0, 0, 0, 0.2) 0 2px 8px;
+
+  --chart-capital: #a78bfa;
+  --chart-expenses: #f87171;
+  --chart-return: #34d399;
+  --chart-cross: #c4b5fd;
+}
+
+/* System dark preference (only when no manual override) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --text: #a8a4b5;
+    --text-h: #f4f2f8;
+    --bg: #0f0e14;
+    --panel-bg: #1a1822;
+    --border: #2f2c3a;
+    --warning-text: #fbbf24;
+    --shadow:
+      rgba(0, 0, 0, 0.35) 0 4px 24px,
+      rgba(0, 0, 0, 0.2) 0 2px 8px;
+
+    --chart-capital: #a78bfa;
+    --chart-expenses: #f87171;
+    --chart-return: #34d399;
+    --chart-cross: #c4b5fd;
+  }
+}
+
+/* Manual dark override */
+[data-theme='dark'] {
+  --text: #a8a4b5;
+  --text-h: #f4f2f8;
+  --bg: #0f0e14;
+  --panel-bg: #1a1822;
+  --border: #2f2c3a;
+  --warning-text: #fbbf24;
+  --shadow:
+    rgba(0, 0, 0, 0.35) 0 4px 24px,
+    rgba(0, 0, 0, 0.2) 0 2px 8px;
+
+  --chart-capital: #a78bfa;
+  --chart-expenses: #f87171;
+  --chart-return: #34d399;
+  --chart-cross: #c4b5fd;
+}
+
+/* Manual light override (overrides dark media query) */
+[data-theme='light'] {
+  --text: #5c5a66;
+  --text-h: #12101a;
+  --bg: #f7f6f9;
+  --panel-bg: #fff;
+  --border: #e2e0e8;
+  --accent-border: rgba(91, 77, 255, 0.45);
+  --warning-text: #b45309;
+  --shadow:
+    rgba(15, 23, 42, 0.06) 0 4px 24px,
+    rgba(15, 23, 42, 0.04) 0 2px 8px;
+
+  --chart-capital: #5b4dff;
+  --chart-expenses: #dc2626;
+  --chart-return: #059669;
+  --chart-cross: #7c3aed;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  min-height: 100svh;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2 {
+  font-family: var(--sans);
+  font-weight: 600;
+}

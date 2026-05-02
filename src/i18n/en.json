@@ -1,0 +1,93 @@
+{
+  "app": {
+    "title": "Early Retirement",
+    "subtitle": "Simulation of capital, inflation-adjusted expenses, and the first year when the portfolio's annual return exceeds annual expenses (in nominal terms)."
+  },
+  "sections": {
+    "params": "Parameters",
+    "result": "Result",
+    "chart": "Chart"
+  },
+  "form": {
+    "initialCapital": {
+      "label": "Current capital",
+      "tip": "Total amount you currently have available to invest — savings, deposits, ETF portfolio, etc."
+    },
+    "monthlyNeed": {
+      "label": "Monthly need (net)",
+      "tip": "How much money you need per month in retirement — in today's prices, excluding inflation. (The model inflates this amount every year.)"
+    },
+    "monthlyContribution": {
+      "label": "Monthly contribution",
+      "tip": "Amount you invest into your portfolio each month. At year end, 12 × this value is added to capital."
+    },
+    "inflation": {
+      "label": "Annual inflation (%)",
+      "tip": "Expected annual price increase that reduces purchasing power. Affects how much the same standard of living will cost in the future."
+    },
+    "return": {
+      "label": "Annual return (%)",
+      "tip": "Average annual portfolio return — nominal, before inflation. Historically around 7–10% for a global index fund."
+    },
+    "horizon": {
+      "label": "Horizon (years)",
+      "tip": "Number of years the simulation covers starting from today. A crossover is only possible within this period."
+    },
+    "age": {
+      "label": "Age (optional)",
+      "tip": "Optional. When set, the X-axis can show your age (current age + simulation year), and results can reference your age at crossover."
+    }
+  },
+  "result": {
+    "invalid": "Enter a horizon of at least one year.",
+    "noCrossover": "Within the given horizon, annual return never exceeds inflation-adjusted annual expenses."
+  },
+  "stats": {
+    "capitalAt": "Capital then",
+    "passiveIncome": "Annual return then",
+    "annualCost": "Annual expenses then",
+    "finalCapital": "Capital at end",
+    "maxIncome": "Max. annual return",
+    "finalCost": "Expenses at end",
+    "ageAt": "Age then"
+  },
+  "units": {
+    "perYear": "/yr."
+  },
+  "chart": {
+    "hint": "Purple line (left axis): total capital. Red and green (right axis): annual expenses and passive return. Dashed line: crossover point.",
+    "legendAria": "Chart legend",
+    "axisModeLabel": "X axis:",
+    "crossoverLabel": "Crossover:",
+    "toggles": {
+      "relative": "Relative years",
+      "calendar": "Calendar years",
+      "age": "Age"
+    },
+    "labels": {
+      "year": "Year",
+      "age": "Age"
+    },
+    "legend": {
+      "capital": "Capital",
+      "expenses": "Annual expenses",
+      "return": "Annual return (C × %)"
+    }
+  },
+  "errors": {
+    "notNumber": "Enter a valid number",
+    "min": "Minimum is",
+    "max": "Maximum is",
+    "nonNegative": "Value must be ≥ 0",
+    "age": "Enter a whole number from 0 to 120"
+  },
+  "ui": {
+    "langLabel": "Language",
+    "switchToLight": "Light theme",
+    "switchToDark": "Dark theme"
+  },
+  "footer": {
+    "infoBoxAge": "The age you enter is used for the “age” X-axis mode (current age + years simulated) and to show age in results. It is optional; without it you only get relative or calendar years.",
+    "cookiesNote": "This site does not store any personal details in cookies, except your selected language."
+  }
+}

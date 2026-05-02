@@ -1,0 +1,93 @@
+{
+  "app": {
+    "title": "Rano penzionisanje",
+    "subtitle": "Simulacija kapitala, inflacionih troškova i prve godine kada godišnji prinos portfolija premašuje godišnje potrebne troškove (u nominalnoj vrednosti)."
+  },
+  "sections": {
+    "params": "Parametri",
+    "result": "Rezultat",
+    "chart": "Grafikon"
+  },
+  "form": {
+    "initialCapital": {
+      "label": "Trenutni kapital",
+      "tip": "Ukupan iznos kojim trenutno raspolažeš za investiranje — ušteđevina, depo, ETF portfolio i slično."
+    },
+    "monthlyNeed": {
+      "label": "Mesečna potreba (neto)",
+      "tip": "Koliko novca mesečno ti je potrebno u penziji — u današnjim cenama, bez inflacije. (Model automatski uvećava ovaj iznos svake godine.)"
+    },
+    "monthlyContribution": {
+      "label": "Mesečni doprinos",
+      "tip": "Iznos koji mesečno ulažeš u investicioni portfolio. Na kraju svake godine se dodaje 12 × ova vrednost."
+    },
+    "inflation": {
+      "label": "Godišnja inflacija (%)",
+      "tip": "Godišnji rast cena koji smanjuje kupovnu moć novca. Utiče na koliko će koštati isti životni standard u budućnosti."
+    },
+    "return": {
+      "label": "Godišnji prinos (%)",
+      "tip": "Prosečni godišnji prinos portfolija — nominalno, pre inflacije. Za globalni indeksni fond istorijski oko 7–10%."
+    },
+    "horizon": {
+      "label": "Horizont (godina)",
+      "tip": "Broj godina koji simulacija pokriva počev od danas. Presek je moguć samo unutar ovog perioda."
+    },
+    "age": {
+      "label": "Godine života (opciono)",
+      "tip": "Opciono. Kada je uneto, X osa može prikazivati tvoje godine starosti, a u rezultatima se vidi u kojim godinama dostižeš finansijsku slobodu."
+    }
+  },
+  "result": {
+    "invalid": "Unesi horizont od najmanje jedne godine.",
+    "noCrossover": "U zadatom horizontu godišnji prinos nikad ne premašuje inflaciono uvećane godišnje troškove."
+  },
+  "stats": {
+    "capitalAt": "Kapital tada",
+    "passiveIncome": "Godišnji prinos tada",
+    "annualCost": "Godišnji troškovi tada",
+    "finalCapital": "Kapital na kraju",
+    "maxIncome": "Maks. godišnji prinos",
+    "finalCost": "Troškovi na kraju",
+    "ageAt": "Starost tada"
+  },
+  "units": {
+    "perYear": "/god."
+  },
+  "chart": {
+    "hint": "Ljubičasta linija (leva osa): ukupan kapital. Crvena i zelena (desna osa): godišnji troškovi i pasivni prinos. Isprekidana linija: tačka preseka.",
+    "legendAria": "Legenda grafikona",
+    "axisModeLabel": "X osa:",
+    "crossoverLabel": "Presek:",
+    "toggles": {
+      "relative": "Relativne godine",
+      "calendar": "Kalendarske godine",
+      "age": "Godine starosti"
+    },
+    "labels": {
+      "year": "Godina",
+      "age": "Starost"
+    },
+    "legend": {
+      "capital": "Kapital",
+      "expenses": "Godišnji troškovi",
+      "return": "Godišnji prinos (K × %)"
+    }
+  },
+  "errors": {
+    "notNumber": "Unesite ispravan broj",
+    "min": "Minimum je",
+    "max": "Maksimum je",
+    "nonNegative": "Vrednost mora biti ≥ 0",
+    "age": "Unesite ceo broj od 0 do 120"
+  },
+  "ui": {
+    "langLabel": "Jezik",
+    "switchToLight": "Svetla tema",
+    "switchToDark": "Tamna tema"
+  },
+  "footer": {
+    "infoBoxAge": "Uneta starost koristi se za osu X u režimu „godine života“ (trenutna starost + broj godina simulacije) i za prikaz starosti u rezultatu. Opciono je — bez nje ostaju samo relativne ili kalendarske godine.",
+    "cookiesNote": "Sajt ne čuva nikakve detalje o vama u kolačićima, osim izabranog jezika."
+  }
+}
