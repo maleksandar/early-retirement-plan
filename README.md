@@ -2,6 +2,8 @@
 
 A browser-based financial independence simulator that helps you visualize when your portfolio's passive return will exceed your inflation-adjusted living expenses — the **crossover point** toward early retirement.
 
+**Live demo:** https://early-retirement-plan.vercel.app
+
 ---
 
 ## Features
