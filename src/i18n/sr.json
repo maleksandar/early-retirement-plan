@@ -40,7 +40,17 @@
   },
   "result": {
     "invalid": "Unesi horizont od najmanje jedne godine.",
-    "noCrossover": "U zadatom horizontu godišnji prinos nikad ne premašuje inflaciono uvećane godišnje troškove."
+    "noCrossover": "U zadatom horizontu godišnji prinos nikad ne premašuje inflaciono uvećane godišnje troškove.",
+    "outcome": {
+      "crossoverTitleByAge": "Finansijska sloboda kada napuniš {age} god.",
+      "crossoverTitleByCalendar": "Finansijska sloboda u {year}. god.",
+      "crossoverTitleRelative": "Finansijska sloboda za {years} god.",
+      "crossoverSub": "Godišnji prinos portfolija premašuje inflacijom uvećane troškove.",
+      "crossoverSurplus": "Godišnji suficit: {amount} — prinos svake naredne godine premašuje troškove.",
+      "noCrossoverTitle": "Presek nije dostignut za {years} god.",
+      "noCrossoverSub": "Pokušaj veći doprinos, manji mesečni cilj ili duži horizont.",
+      "noCrossoverGap": "Nedostaje još {amount}/god. da bi prinos pokrio troškove."
+    }
   },
   "stats": {
     "capitalAt": "Kapital tada",
@@ -83,10 +93,13 @@
   },
   "ui": {
     "langLabel": "Jezik",
+    "langOptionSr": "🇷🇸 Srpski",
+    "langOptionEn": "🇬🇧 Engleski",
     "switchToLight": "Svetla tema",
     "switchToDark": "Tamna tema"
   },
   "footer": {
+    "modelDisclaimer": "Model: na kraju godine kapital se uvećava za prinos i dodaje se 12 × mesečni doprinos. Godišnji troškovi = 12 × mesečna potreba × (1 + inflacija)<sup>godina</sup>. Prinos = trenutni kapital × godišnja stopa (nominalno). Nije finansijski savet.",
     "infoBoxAge": "Uneta starost koristi se za osu X u režimu „godine života“ (trenutna starost + broj godina simulacije) i za prikaz starosti u rezultatu. Opciono je — bez nje ostaju samo relativne ili kalendarske godine.",
     "cookiesNote": "Sajt ne čuva nikakve detalje o vama u kolačićima, osim izabranog jezika."
   }

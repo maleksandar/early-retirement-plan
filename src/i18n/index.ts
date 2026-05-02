@@ -32,3 +32,12 @@ export function tr(lang: Lang, path: TranslationPath): string {
     path
   )
 }
+
+/** Replaces `{key}` placeholders in the translated string. */
+export function trParams(lang: Lang, path: TranslationPath, params: Record<string, string | number>): string {
+  let s = tr(lang, path)
+  for (const [k, v] of Object.entries(params)) {
+    s = s.replaceAll(`{${k}}`, String(v))
+  }
+  return s
+}

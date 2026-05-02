@@ -40,7 +40,17 @@
   },
   "result": {
     "invalid": "Enter a horizon of at least one year.",
-    "noCrossover": "Within the given horizon, annual return never exceeds inflation-adjusted annual expenses."
+    "noCrossover": "Within the given horizon, annual return never exceeds inflation-adjusted annual expenses.",
+    "outcome": {
+      "crossoverTitleByAge": "Financial freedom when you reach age {age}",
+      "crossoverTitleByCalendar": "Financial freedom in {year}",
+      "crossoverTitleRelative": "Financial freedom in {years} years",
+      "crossoverSub": "Annual portfolio return exceeds inflation-adjusted expenses.",
+      "crossoverSurplus": "Annual surplus: {amount} — return exceeds expenses every year from this point.",
+      "noCrossoverTitle": "No crossover within {years} years",
+      "noCrossoverSub": "Try a higher contribution, lower monthly need, or longer horizon.",
+      "noCrossoverGap": "Gap to cover: {amount}/yr between return and expenses."
+    }
   },
   "stats": {
     "capitalAt": "Capital then",
@@ -83,10 +93,13 @@
   },
   "ui": {
     "langLabel": "Language",
+    "langOptionSr": "🇷🇸 Serbian",
+    "langOptionEn": "🇬🇧 English",
     "switchToLight": "Light theme",
     "switchToDark": "Dark theme"
   },
   "footer": {
+    "modelDisclaimer": "Model: at year end, capital grows by the return rate and 12 × monthly contribution is added. Annual expenses = 12 × monthly need × (1 + inflation)<sup>year</sup>. Return = current capital × annual rate (nominal). Not financial advice.",
     "infoBoxAge": "The age you enter is used for the “age” X-axis mode (current age + years simulated) and to show age in results. It is optional; without it you only get relative or calendar years.",
     "cookiesNote": "This site does not store any personal details in cookies, except your selected language."
   }
