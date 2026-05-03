@@ -52,6 +52,22 @@
       "disabledInflationTip": "Ne koristi se u istorijskom modu — stvarna godišnja inflacija (američki CPI) zamenjuje ovu fiksnu stopu.",
       "disabledReturnTip": "Ne koristi se u istorijskom modu — stvarni godišnji prinosi S&P 500 zamenjuju ovu fiksnu stopu."
     },
+    "assetAllocation": {
+      "sectionTitle": "Raspodela imovine",
+      "stocksLabel": "Akcije / ETF",
+      "bondsLabel": "Obveznice",
+      "realestateLabel": "Nekretnine",
+      "goldLabel": "Zlato",
+      "silverLabel": "Srebro",
+      "cryptoLabel": "Kripto",
+      "valueLabel": "Vrednost ($)",
+      "returnLabel": "Godišnji prinos (%)",
+      "stdDevLabel": "Std. dev. (%)",
+      "cryptoYearClamp": "Početna godina ograničena na {year} — najstariji dostupni kripto podaci.",
+      "totalLabel": "Ukupno",
+      "blendedReturnLabel": "Mešoviti prinos",
+      "blendedStdDevLabel": "Mešovita std. dev."
+    },
     "mc": {
       "toggleLabel": "Monte Karlo mod",
       "toggleTip": "Pokreće mnogo nasumičnih scenarija kako bi prikazao opseg ishoda na osnovu promenljivosti prinosa i inflacije. Godišnji prinos i inflacija se uzorkuju iz normalne raspodele svake godine.",

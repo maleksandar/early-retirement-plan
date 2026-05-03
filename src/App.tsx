@@ -1,10 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { tr, type Lang } from './i18n';
-import { simulate, simulateHistorical, type MCResult, type MonteCarloInput } from './model/simulate';
-import { DEFAULTS, MC_DEFAULTS, HIST_DEFAULT_START_YEAR, type XMode, type SimMode } from './constants';
+import { simulate, simulateHistorical, type MCResult, type MonteCarloInput, type AssetAllocation } from './model/simulate';
+import {
+  DEFAULTS,
+  MC_DEFAULTS,
+  HIST_DEFAULT_START_YEAR,
+  HIST_CRYPTO_FIRST_YEAR,
+  type XMode,
+  type SimMode,
+  EXTRA_ASSETS,
+  type ExtraAsset,
+  type ExtraAssetState,
+  EXTRA_ASSET_DEFAULTS,
+  DEFAULT_ALLOC_ORDER,
+} from './constants';
 import { parseNum, parseAgeYears, getErrors } from './lib';
 import { readUrlState, buildSearchParams } from './url';
-import { fetchHistoricalRates, type HistoricalRate } from './data/historical';
+import { fetchHistoricalRates, fetchAssetHistoricalRates, type HistoricalRate, type AssetHistoricalRate } from './data/historical';
 import { InputForm } from './components/InputForm';
 import { OutcomePanel } from './components/OutcomePanel';
 import { SimulationChart } from './components/SimulationChart';
@@ -64,6 +76,18 @@ export default function App() {
     () => urlInit.mcInflationStdDev ?? MC_DEFAULTS.mcInflationStdDev,
   );
 
+  // Asset allocation state
+  const [extraAssets, setExtraAssets] = useState<Record<ExtraAsset, ExtraAssetState>>(
+    () => urlInit.extraAssets ?? { ...EXTRA_ASSET_DEFAULTS },
+  );
+  const [stocksVal, setStocksVal] = useState<string>(
+    () => urlInit.stocksVal ?? String(DEFAULTS.initialCapital),
+  );
+  const [allocOrder, setAllocOrder] = useState<string[]>(
+    () => urlInit.allocOrder ?? [...DEFAULT_ALLOC_ORDER],
+  );
+  const [cryptoClampNotice, setCryptoClampNotice] = useState(false);
+
   const mcEnabled = simMode === 'mc';
 
   // Monte Carlo result state
@@ -73,6 +97,7 @@ export default function App() {
   // Historical data state
   const [histData, setHistData] = useState<HistoricalRate[] | null>(null);
   const [histDataError, setHistDataError] = useState<string | null>(null);
+  const [assetHistData, setAssetHistData] = useState<Partial<Record<ExtraAsset, AssetHistoricalRate[]>>>({});
 
   // Worker management
   const workerRef = useRef<Worker | null>(null);
@@ -107,12 +132,104 @@ export default function App() {
       .catch((e: unknown) => setHistDataError(String(e)));
   }, []);
 
+  // Fetch per-asset historical data when needed in hist mode
+  useEffect(() => {
+    if (simMode !== 'hist') return;
+    for (const asset of EXTRA_ASSETS) {
+      if (!extraAssets[asset].on) continue;
+      if (assetHistData[asset]) continue;
+      fetchAssetHistoricalRates(asset).then((data) => {
+        setAssetHistData((prev) => ({ ...prev, [asset]: data }));
+      }).catch(console.error);
+    }
+  }, [simMode, extraAssets, assetHistData]);
+
+  // Multi-asset mode
+  const multiAssetMode = useMemo(
+    () => EXTRA_ASSETS.some((a) => extraAssets[a].on),
+    [extraAssets],
+  );
+
   const ageYears = useMemo(() => parseAgeYears(currentAge), [currentAge]);
 
   const resolvedXMode = useMemo((): XMode => {
     if (xMode === 'age') return ageYears !== null ? 'age' : 'rel';
     return xMode;
   }, [xMode, ageYears]);
+
+  // Blended capital from all active assets
+  const blendedCapital = useMemo(() => {
+    if (!multiAssetMode) return parseNum(initialCapital);
+    const base = parseNum(stocksVal);
+    return EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce(
+      (s, a) => s + parseNum(extraAssets[a].val),
+      base,
+    );
+  }, [multiAssetMode, initialCapital, stocksVal, extraAssets]);
+
+  // Weighted blended return %
+  const blendedReturnNum = useMemo(() => {
+    if (!multiAssetMode || blendedCapital <= 0) return parseNum(annualReturnPercent);
+    const stocksWeight = parseNum(stocksVal) / blendedCapital;
+    let w = stocksWeight * parseNum(annualReturnPercent);
+    for (const a of EXTRA_ASSETS) {
+      if (!extraAssets[a].on) continue;
+      w += (parseNum(extraAssets[a].val) / blendedCapital) * parseNum(extraAssets[a].ret);
+    }
+    return w;
+  }, [multiAssetMode, blendedCapital, stocksVal, annualReturnPercent, extraAssets]);
+
+  // Weighted blended std dev % (for display in MC mode)
+  const blendedStdDevNum = useMemo(() => {
+    if (!multiAssetMode || blendedCapital <= 0) return parseNum(mcReturnStdDev);
+    const stocksWeight = parseNum(stocksVal) / blendedCapital;
+    let w = stocksWeight * parseNum(mcReturnStdDev);
+    for (const a of EXTRA_ASSETS) {
+      if (!extraAssets[a].on) continue;
+      w += (parseNum(extraAssets[a].val) / blendedCapital) * parseNum(extraAssets[a].sd);
+    }
+    return w;
+  }, [multiAssetMode, blendedCapital, stocksVal, mcReturnStdDev, extraAssets]);
+
+  const effectiveCapital = multiAssetMode ? blendedCapital : parseNum(initialCapital);
+  const effectiveReturn = multiAssetMode ? blendedReturnNum : parseNum(annualReturnPercent);
+
+  // Asset allocations array for MC & hist modes
+  const assetAllocations = useMemo((): AssetAllocation[] | undefined => {
+    if (!multiAssetMode) return undefined;
+    const allocs: AssetAllocation[] = [
+      {
+        assetClass: 'stocks',
+        value: parseNum(stocksVal),
+        annualReturnPercent: parseNum(annualReturnPercent),
+        returnStdDevPercent: parseNum(mcReturnStdDev),
+      },
+    ];
+    for (const a of EXTRA_ASSETS) {
+      if (!extraAssets[a].on) continue;
+      allocs.push({
+        assetClass: a,
+        value: parseNum(extraAssets[a].val),
+        annualReturnPercent: parseNum(extraAssets[a].ret),
+        returnStdDevPercent: parseNum(extraAssets[a].sd),
+      });
+    }
+    return allocs;
+  }, [multiAssetMode, stocksVal, annualReturnPercent, mcReturnStdDev, extraAssets]);
+
+  // Effective hist start year min (2010 when crypto active)
+  const histMinYear = useMemo(
+    () => (extraAssets.crypto.on ? HIST_CRYPTO_FIRST_YEAR : 1970),
+    [extraAssets.crypto.on],
+  );
+
+  // Clamp histStartYear when crypto is toggled on
+  useEffect(() => {
+    if (extraAssets.crypto.on && histStartYear < HIST_CRYPTO_FIRST_YEAR) {
+      setHistStartYear(HIST_CRYPTO_FIRST_YEAR);
+      setCryptoClampNotice(true);
+    }
+  }, [extraAssets.crypto.on, histStartYear]);
 
   useEffect(() => {
     const qs = buildSearchParams({
@@ -130,6 +247,9 @@ export default function App() {
       mcReturnStdDev,
       mcInflationStdDev,
       histStartYear,
+      stocksVal,
+      extraAssets,
+      allocOrder,
     });
     const path = `${window.location.pathname}?${qs}`;
     window.history.replaceState(null, '', path);
@@ -148,25 +268,32 @@ export default function App() {
     mcReturnStdDev,
     mcInflationStdDev,
     histStartYear,
+    stocksVal,
+    extraAssets,
+    allocOrder,
   ]);
 
   const errors = useMemo(
     () =>
       getErrors(
         {
-          initialCapital,
+          initialCapital: multiAssetMode ? String(blendedCapital) : initialCapital,
           monthlyNeedToday,
           monthlyContribution,
           annualInflationPercent,
-          annualReturnPercent,
+          annualReturnPercent: multiAssetMode ? String(blendedReturnNum) : annualReturnPercent,
           horizonYears,
         },
         currentAge,
         lang,
         simMode === 'mc' ? { mcReturnStdDev, mcInflationStdDev } : undefined,
         simMode === 'hist',
+        multiAssetMode ? { extraAssets, mcMode: simMode === 'mc' } : undefined,
       ),
     [
+      multiAssetMode,
+      blendedCapital,
+      blendedReturnNum,
       initialCapital,
       monthlyNeedToday,
       monthlyContribution,
@@ -178,12 +305,13 @@ export default function App() {
       simMode,
       mcReturnStdDev,
       mcInflationStdDev,
+      extraAssets,
     ],
   );
 
   const result = useMemo(() => {
     const baseInput = {
-      initialCapital: parseNum(initialCapital),
+      initialCapital: effectiveCapital,
       monthlyNeedToday: parseNum(monthlyNeedToday),
       monthlyContribution: parseNum(monthlyContribution),
       horizonYears: parseNum(horizonYears),
@@ -215,24 +343,51 @@ export default function App() {
         };
       }
       const rates = histData.slice(startIdx);
+
+      if (multiAssetMode && assetAllocations) {
+        const activeExtras = EXTRA_ASSETS.filter((a) => extraAssets[a].on);
+        // Check all active asset data is loaded
+        const allLoaded = activeExtras.every((a) => assetHistData[a] != null);
+        if (!allLoaded) {
+          return {
+            series: [] as { year: number; capital: number; annualExpenses: number; passiveReturn: number }[],
+            crossoverYear: null as number | null,
+            truncated: false,
+            invalid: true,
+          };
+        }
+        type NonStocks = Exclude<import('./data/historical').AssetClass, 'stocks'>;
+        const alignedRates: Partial<Record<NonStocks, { returnPct: number }[]>> = {};
+        for (const a of activeExtras) {
+          const data = assetHistData[a]!;
+          const assetIdx = data.findIndex((d) => d.year === histStartYear);
+          alignedRates[a as NonStocks] = assetIdx >= 0 ? data.slice(assetIdx) : data;
+        }
+        return { ...simulateHistorical(baseInput, rates, assetAllocations, alignedRates), invalid: false };
+      }
+
       return { ...simulateHistorical(baseInput, rates), invalid: false };
     }
     const input = {
       ...baseInput,
       annualInflationPercent: parseNum(annualInflationPercent),
-      annualReturnPercent: parseNum(annualReturnPercent),
+      annualReturnPercent: effectiveReturn,
     };
     return { ...simulate(input), truncated: false, invalid: false };
   }, [
     simMode,
     histData,
     histStartYear,
-    initialCapital,
+    effectiveCapital,
+    effectiveReturn,
     monthlyNeedToday,
     annualInflationPercent,
     monthlyContribution,
-    annualReturnPercent,
     horizonYears,
+    multiAssetMode,
+    assetAllocations,
+    assetHistData,
+    extraAssets,
   ]);
 
   // Compute MC input params (null when MC cannot run)
@@ -240,30 +395,34 @@ export default function App() {
     if (!mcEnabled || result.invalid) return null;
     if (errors.mcReturnStdDev || errors.mcInflationStdDev) return null;
     return {
-      initialCapital: parseNum(initialCapital),
+      initialCapital: effectiveCapital,
       monthlyNeedToday: parseNum(monthlyNeedToday),
       annualInflationPercent: parseNum(annualInflationPercent),
       monthlyContribution: parseNum(monthlyContribution),
-      annualReturnPercent: parseNum(annualReturnPercent),
+      annualReturnPercent: effectiveReturn,
       horizonYears: parseNum(horizonYears),
-      returnStdDevPercent: parseNum(mcReturnStdDev),
+      returnStdDevPercent: multiAssetMode ? blendedStdDevNum : parseNum(mcReturnStdDev),
       inflationStdDevPercent: parseNum(mcInflationStdDev),
       runCount: parseNum(mcRunCount),
+      assetAllocations,
     };
   }, [
     mcEnabled,
     result.invalid,
     errors.mcReturnStdDev,
     errors.mcInflationStdDev,
-    initialCapital,
+    effectiveCapital,
+    effectiveReturn,
     monthlyNeedToday,
     annualInflationPercent,
     monthlyContribution,
-    annualReturnPercent,
     horizonYears,
     mcReturnStdDev,
     mcInflationStdDev,
     mcRunCount,
+    multiAssetMode,
+    blendedStdDevNum,
+    assetAllocations,
   ]);
 
   // Launch a worker run; terminates any in-progress run first
@@ -343,6 +502,24 @@ export default function App() {
     return histStartYear + result.series[result.series.length - 1].year;
   }, [simMode, histStartYear, result.series]);
 
+  function updateExtraAsset(asset: ExtraAsset, field: keyof ExtraAssetState, value: string | boolean) {
+    setExtraAssets((prev) => ({
+      ...prev,
+      [asset]: { ...prev[asset], [field]: value },
+    }));
+  }
+
+  function handleToggleAsset(asset: ExtraAsset, on: boolean) {
+    if (on) {
+      const anyOtherOn = EXTRA_ASSETS.filter((a) => a !== asset).some((a) => extraAssets[a].on);
+      if (!anyOtherOn) {
+        setStocksVal(initialCapital);
+      }
+    }
+    setCryptoClampNotice(false);
+    updateExtraAsset(asset, 'on', on);
+  }
+
   return (
     <div className='app'>
       <header className='header'>
@@ -399,6 +576,7 @@ export default function App() {
         setSimMode={setSimMode}
         histStartYear={histStartYear}
         setHistStartYear={setHistStartYear}
+        histMinYear={histMinYear}
         histData={histData}
         histDataError={histDataError}
         mcRunCount={mcRunCount}
@@ -409,6 +587,19 @@ export default function App() {
         setMcInflationStdDev={setMcInflationStdDev}
         mcStatus={mcStatus}
         onRerunMC={handleRerunMC}
+        multiAssetMode={multiAssetMode}
+        blendedCapital={blendedCapital}
+        blendedReturnNum={blendedReturnNum}
+        blendedStdDevNum={blendedStdDevNum}
+        extraAssets={extraAssets}
+        stocksVal={stocksVal}
+        setStocksVal={setStocksVal}
+        allocOrder={allocOrder}
+        setAllocOrder={setAllocOrder}
+        onToggleAsset={handleToggleAsset}
+        onUpdateAsset={updateExtraAsset}
+        cryptoClampNotice={cryptoClampNotice}
+        onDismissCryptoClamp={() => setCryptoClampNotice(false)}
       />
 
       <OutcomePanel

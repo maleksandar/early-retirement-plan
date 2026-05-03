@@ -1,5 +1,24 @@
 import { type Lang } from './i18n';
-import { QP, type XMode, type SimMode, HIST_FIRST_YEAR, HIST_LAST_YEAR } from './constants';
+import {
+  QP,
+  type XMode,
+  type SimMode,
+  HIST_FIRST_YEAR,
+  HIST_LAST_YEAR,
+  EXTRA_ASSETS,
+  type ExtraAsset,
+  type ExtraAssetState,
+  EXTRA_ASSET_DEFAULTS,
+  DEFAULT_ALLOC_ORDER,
+} from './constants';
+
+const ASSET_QP: Record<ExtraAsset, { on: string; val: string; ret: string; sd: string }> = {
+  bonds:      { on: QP.bonOn, val: QP.bonVal, ret: QP.bonRet, sd: QP.bonSd },
+  realestate: { on: QP.reOn,  val: QP.reVal,  ret: QP.reRet,  sd: QP.reSd  },
+  gold:       { on: QP.goOn,  val: QP.goVal,  ret: QP.goRet,  sd: QP.goSd  },
+  silver:     { on: QP.siOn,  val: QP.siVal,  ret: QP.siRet,  sd: QP.siSd  },
+  crypto:     { on: QP.crOn,  val: QP.crVal,  ret: QP.crRet,  sd: QP.crSd  },
+};
 
 export function readUrlState(): {
   lang?: Lang;
@@ -16,6 +35,9 @@ export function readUrlState(): {
   mcReturnStdDev?: string;
   mcInflationStdDev?: string;
   histStartYear?: number;
+  stocksVal?: string;
+  extraAssets?: Record<ExtraAsset, ExtraAssetState>;
+  allocOrder?: string[];
 } {
   if (typeof window === 'undefined') return {};
   const sp = new URLSearchParams(window.location.search);
@@ -45,6 +67,35 @@ export function readUrlState(): {
     const hy = parseInt(hyv, 10);
     if (hy >= HIST_FIRST_YEAR && hy <= HIST_LAST_YEAR) o.histStartYear = hy;
   }
+
+  if (g(QP.stV) != null && g(QP.stV) !== '') o.stocksVal = g(QP.stV)!;
+
+  const extraAssets: Record<ExtraAsset, ExtraAssetState> = { ...EXTRA_ASSET_DEFAULTS };
+  let anyAssetInUrl = false;
+  for (const asset of EXTRA_ASSETS) {
+    const keys = ASSET_QP[asset];
+    const on = g(keys.on);
+    const val = g(keys.val);
+    const ret = g(keys.ret);
+    const sd = g(keys.sd);
+    if (on != null || val != null || ret != null || sd != null) {
+      anyAssetInUrl = true;
+      extraAssets[asset] = {
+        on: on === '1',
+        val: val ?? EXTRA_ASSET_DEFAULTS[asset].val,
+        ret: ret ?? EXTRA_ASSET_DEFAULTS[asset].ret,
+        sd: sd ?? EXTRA_ASSET_DEFAULTS[asset].sd,
+      };
+    }
+  }
+  if (anyAssetInUrl) o.extraAssets = extraAssets;
+
+  const aord = g(QP.aOrd);
+  if (aord) {
+    const parts = aord.split(',').filter(Boolean);
+    if (parts.length >= 1) o.allocOrder = parts;
+  }
+
   return o;
 }
 
@@ -63,6 +114,9 @@ export function buildSearchParams(state: {
   mcReturnStdDev: string;
   mcInflationStdDev: string;
   histStartYear: number;
+  stocksVal: string;
+  extraAssets: Record<ExtraAsset, ExtraAssetState>;
+  allocOrder: string[];
 }): string {
   const sp = new URLSearchParams();
   sp.set(QP.l, state.lang);
@@ -83,5 +137,25 @@ export function buildSearchParams(state: {
     sp.set(QP.sm, 'hist');
     sp.set(QP.hy, String(state.histStartYear));
   }
+
+  const anyOn = EXTRA_ASSETS.some((a) => state.extraAssets[a].on);
+  if (anyOn) {
+    sp.set(QP.stV, state.stocksVal);
+    for (const asset of EXTRA_ASSETS) {
+      const a = state.extraAssets[asset];
+      const keys = ASSET_QP[asset];
+      sp.set(keys.on, a.on ? '1' : '0');
+      if (a.on) {
+        sp.set(keys.val, a.val);
+        sp.set(keys.ret, a.ret);
+        sp.set(keys.sd, a.sd);
+      }
+    }
+    const order = state.allocOrder.join(',');
+    if (order !== DEFAULT_ALLOC_ORDER.join(',')) {
+      sp.set(QP.aOrd, order);
+    }
+  }
+
   return sp.toString();
 }
