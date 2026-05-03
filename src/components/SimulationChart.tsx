@@ -1,4 +1,5 @@
 import {
+  Area,
   CartesianGrid,
   ComposedChart,
   Legend,
@@ -12,12 +13,22 @@ import {
 import { type Lang, tr } from '../i18n';
 import { CURRENT_YEAR, type XMode } from '../constants';
 import { formatMoney, formatAxis } from '../lib';
+import type { MCResult } from '../model/simulate';
 
 interface ChartPoint {
   year: number;
   capital: number;
   annualExpenses: number;
   passiveReturn: number;
+  capitalP10?: number;
+  capitalP50?: number;
+  capitalBand?: number;
+  passiveReturnP10?: number;
+  passiveReturnP50?: number;
+  passiveReturnBand?: number;
+  expensesP10?: number;
+  expensesP50?: number;
+  expensesBand?: number;
 }
 
 interface SimulationChartProps {
@@ -31,7 +42,10 @@ interface SimulationChartProps {
   setXMode: (mode: XMode) => void;
   crossoverYear: number | null;
   invalid: boolean;
+  mcResult: MCResult | null;
 }
+
+const MC_BAND_KEYS = new Set(['capitalP10', 'capitalBand', 'passiveReturnP10', 'passiveReturnBand', 'expensesP10', 'expensesBand']);
 
 export function SimulationChart({
   lang,
@@ -44,8 +58,10 @@ export function SimulationChart({
   setXMode,
   crossoverYear,
   invalid,
+  mcResult,
 }: SimulationChartProps) {
   const showAgeRadios = ageYears !== null;
+  const isMC = mcResult !== null;
 
   const formatX = (v: number) => {
     if (resolvedXMode === 'cal') return String(CURRENT_YEAR + v);
@@ -55,10 +71,12 @@ export function SimulationChart({
 
   const xAxisTitle = resolvedXMode === 'age' ? tr(lang, 'chart.labels.age') : tr(lang, 'chart.labels.year');
 
+  const activeCrossover = isMC ? mcResult.p50CrossoverYear : crossoverYear;
+
   return (
     <section className='panel chart-panel'>
       <h2>{tr(lang, 'sections.chart')}</h2>
-      <p className='chart-hint'>{tr(lang, 'chart.hint')}</p>
+      <p className='chart-hint'>{tr(lang, isMC ? 'chart.hintMc' : 'chart.hint')}</p>
       <div className='axis-mode' role='group' aria-label={tr(lang, 'chart.axisModeLabel')}>
         <span className='axis-mode-title'>{tr(lang, 'chart.axisModeLabel')}</span>
         {showAgeRadios ? (
@@ -123,47 +141,161 @@ export function SimulationChart({
               tickMargin={4}
             />
             <Tooltip
-              formatter={(value, name) => [formatMoney(Number(value ?? 0)), String(name ?? '')]}
+              formatter={(value, name, props) => {
+                if (MC_BAND_KEYS.has(props.dataKey as string)) return null;
+                return [formatMoney(Number(value ?? 0)), String(name ?? '')];
+              }}
               labelFormatter={(y) =>
                 `${resolvedXMode === 'age' ? tr(lang, 'chart.labels.age') : tr(lang, 'chart.labels.year')} ${formatX(y as number)}`
               }
             />
             {!chartNarrow ? <Legend verticalAlign='top' height={30} /> : null}
-            <Line
-              yAxisId='left'
-              type='monotone'
-              dataKey='capital'
-              name={tr(lang, 'chart.legend.capital')}
-              stroke='var(--chart-capital)'
-              strokeWidth={2}
-              dot={false}
-            />
-            <Line
-              yAxisId='right'
-              type='monotone'
-              dataKey='annualExpenses'
-              name={tr(lang, 'chart.legend.expenses')}
-              stroke='var(--chart-expenses)'
-              strokeWidth={2}
-              dot={false}
-            />
-            <Line
-              yAxisId='right'
-              type='monotone'
-              dataKey='passiveReturn'
-              name={tr(lang, 'chart.legend.return')}
-              stroke='var(--chart-return)'
-              strokeWidth={2}
-              dot={false}
-            />
-            {crossoverYear !== null && !invalid ? (
+
+            {isMC ? (
+              <>
+                {/* Capital band (p10–p90) */}
+                <Area
+                  yAxisId='left'
+                  type='monotone'
+                  dataKey='capitalP10'
+                  stackId='cap'
+                  fill='transparent'
+                  stroke='none'
+                  legendType='none'
+                  name='capitalP10'
+                  isAnimationActive={false}
+                />
+                <Area
+                  yAxisId='left'
+                  type='monotone'
+                  dataKey='capitalBand'
+                  stackId='cap'
+                  fill='var(--chart-capital)'
+                  fillOpacity={0.18}
+                  stroke='none'
+                  name={tr(lang, 'chart.legend.capitalBand')}
+                  isAnimationActive={false}
+                />
+                {/* Capital median line */}
+                <Line
+                  yAxisId='left'
+                  type='monotone'
+                  dataKey='capitalP50'
+                  name={tr(lang, 'chart.legend.capitalP50')}
+                  stroke='var(--chart-capital)'
+                  strokeWidth={2}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+                {/* Expenses band (p10–p90) */}
+                <Area
+                  yAxisId='right'
+                  type='monotone'
+                  dataKey='expensesP10'
+                  stackId='exp'
+                  fill='transparent'
+                  stroke='none'
+                  legendType='none'
+                  name='expensesP10'
+                  isAnimationActive={false}
+                />
+                <Area
+                  yAxisId='right'
+                  type='monotone'
+                  dataKey='expensesBand'
+                  stackId='exp'
+                  fill='var(--chart-expenses)'
+                  fillOpacity={0.18}
+                  stroke='none'
+                  name={tr(lang, 'chart.legend.expensesBand')}
+                  isAnimationActive={false}
+                />
+                {/* Expenses median line */}
+                <Line
+                  yAxisId='right'
+                  type='monotone'
+                  dataKey='expensesP50'
+                  name={tr(lang, 'chart.legend.expensesP50')}
+                  stroke='var(--chart-expenses)'
+                  strokeWidth={2}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+                {/* Return band (p10–p90) */}
+                <Area
+                  yAxisId='right'
+                  type='monotone'
+                  dataKey='passiveReturnP10'
+                  stackId='ret'
+                  fill='transparent'
+                  stroke='none'
+                  legendType='none'
+                  name='passiveReturnP10'
+                  isAnimationActive={false}
+                />
+                <Area
+                  yAxisId='right'
+                  type='monotone'
+                  dataKey='passiveReturnBand'
+                  stackId='ret'
+                  fill='var(--chart-return)'
+                  fillOpacity={0.18}
+                  stroke='none'
+                  name={tr(lang, 'chart.legend.returnBand')}
+                  isAnimationActive={false}
+                />
+                {/* Return median line */}
+                <Line
+                  yAxisId='right'
+                  type='monotone'
+                  dataKey='passiveReturnP50'
+                  name={tr(lang, 'chart.legend.returnP50')}
+                  stroke='var(--chart-return)'
+                  strokeWidth={2}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              </>
+            ) : (
+              <>
+                <Line
+                  yAxisId='left'
+                  type='monotone'
+                  dataKey='capital'
+                  name={tr(lang, 'chart.legend.capital')}
+                  stroke='var(--chart-capital)'
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  yAxisId='right'
+                  type='monotone'
+                  dataKey='annualExpenses'
+                  name={tr(lang, 'chart.legend.expenses')}
+                  stroke='var(--chart-expenses)'
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  yAxisId='right'
+                  type='monotone'
+                  dataKey='passiveReturn'
+                  name={tr(lang, 'chart.legend.return')}
+                  stroke='var(--chart-return)'
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </>
+            )}
+
+            {activeCrossover !== null && !invalid ? (
               <ReferenceLine
-                x={crossoverYear}
+                x={activeCrossover}
                 stroke='var(--chart-cross)'
                 strokeWidth={2}
                 strokeDasharray='4 4'
                 label={{
-                  value: `${tr(lang, 'chart.crossoverLabel')} ${formatX(crossoverYear)}`,
+                  value: `${tr(lang, 'chart.crossoverLabel')} ${formatX(activeCrossover)}`,
                   position: 'insideTopRight',
                   fill: 'var(--text-h)',
                   fontSize: 12,
@@ -174,18 +306,49 @@ export function SimulationChart({
         </ResponsiveContainer>
         {chartNarrow ? (
           <ul className='chart-legend-external' aria-label={tr(lang, 'chart.legendAria')}>
-            <li>
-              <span className='chart-legend-swatch' style={{ background: 'var(--chart-capital)' }} />
-              {tr(lang, 'chart.legend.capital')}
-            </li>
-            <li>
-              <span className='chart-legend-swatch' style={{ background: 'var(--chart-expenses)' }} />
-              {tr(lang, 'chart.legend.expenses')}
-            </li>
-            <li>
-              <span className='chart-legend-swatch' style={{ background: 'var(--chart-return)' }} />
-              {tr(lang, 'chart.legend.return')}
-            </li>
+            {isMC ? (
+              <>
+                <li>
+                  <span className='chart-legend-swatch chart-legend-swatch--band' style={{ background: 'var(--chart-capital)' }} />
+                  {tr(lang, 'chart.legend.capitalBand')}
+                </li>
+                <li>
+                  <span className='chart-legend-swatch' style={{ background: 'var(--chart-capital)' }} />
+                  {tr(lang, 'chart.legend.capitalP50')}
+                </li>
+                <li>
+                  <span className='chart-legend-swatch chart-legend-swatch--band' style={{ background: 'var(--chart-expenses)' }} />
+                  {tr(lang, 'chart.legend.expensesBand')}
+                </li>
+                <li>
+                  <span className='chart-legend-swatch' style={{ background: 'var(--chart-expenses)' }} />
+                  {tr(lang, 'chart.legend.expensesP50')}
+                </li>
+                <li>
+                  <span className='chart-legend-swatch chart-legend-swatch--band' style={{ background: 'var(--chart-return)' }} />
+                  {tr(lang, 'chart.legend.returnBand')}
+                </li>
+                <li>
+                  <span className='chart-legend-swatch' style={{ background: 'var(--chart-return)' }} />
+                  {tr(lang, 'chart.legend.returnP50')}
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <span className='chart-legend-swatch' style={{ background: 'var(--chart-capital)' }} />
+                  {tr(lang, 'chart.legend.capital')}
+                </li>
+                <li>
+                  <span className='chart-legend-swatch' style={{ background: 'var(--chart-expenses)' }} />
+                  {tr(lang, 'chart.legend.expenses')}
+                </li>
+                <li>
+                  <span className='chart-legend-swatch' style={{ background: 'var(--chart-return)' }} />
+                  {tr(lang, 'chart.legend.return')}
+                </li>
+              </>
+            )}
           </ul>
         ) : null}
       </div>

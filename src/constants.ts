@@ -37,4 +37,17 @@ export const QP = {
   h: 'h',
   a: 'a',
   x: 'x',
+  mce: 'mce',
+  mcn: 'mcn',
+  mcrs: 'mcrs',
+  mcis: 'mcis',
 } as const;
+
+export const MC_DEFAULTS = {
+  mcEnabled: false,
+  mcRunCount: '1000',
+  mcReturnStdDev: '15',
+  mcInflationStdDev: '2',
+};
+
+export const MC_RUN_COUNTS = ['500', '1000', '5000', '10000'] as const;

@@ -1,11 +1,13 @@
-import { type Lang, tr } from '../i18n';
-import { SLIDERS, type FieldKey } from '../constants';
+import { type Lang, tr, trParams } from '../i18n';
+import { SLIDERS, MC_RUN_COUNTS, type FieldKey } from '../constants';
 import { sliderVal } from '../lib';
+import type { MCFieldKey } from '../lib';
+import type { MCStatus } from '../App';
 import { FieldTooltip } from './FieldTooltip';
 
 interface InputFormProps {
   lang: Lang;
-  errors: Partial<Record<FieldKey | 'currentAge', string>>;
+  errors: Partial<Record<FieldKey | 'currentAge' | MCFieldKey, string>>;
   initialCapital: string;
   setInitialCapital: (v: string) => void;
   monthlyNeedToday: string;
@@ -20,6 +22,16 @@ interface InputFormProps {
   setHorizonYears: (v: string) => void;
   currentAge: string;
   setCurrentAge: (v: string) => void;
+  mcEnabled: boolean;
+  setMcEnabled: (v: boolean) => void;
+  mcRunCount: string;
+  setMcRunCount: (v: string) => void;
+  mcReturnStdDev: string;
+  setMcReturnStdDev: (v: string) => void;
+  mcInflationStdDev: string;
+  setMcInflationStdDev: (v: string) => void;
+  mcStatus: MCStatus;
+  onRerunMC: () => void;
 }
 
 export function InputForm({
@@ -39,7 +51,18 @@ export function InputForm({
   setHorizonYears,
   currentAge,
   setCurrentAge,
+  mcEnabled,
+  setMcEnabled,
+  mcRunCount,
+  setMcRunCount,
+  mcReturnStdDev,
+  setMcReturnStdDev,
+  mcInflationStdDev,
+  setMcInflationStdDev,
+  mcStatus,
+  onRerunMC,
 }: InputFormProps) {
+  const runsFormatted = Number(mcRunCount).toLocaleString();
   return (
     <section className='panel form-panel'>
       <h2>{tr(lang, 'sections.params')}</h2>
@@ -224,6 +247,112 @@ export function InputForm({
             {errors.currentAge && <span className='field-error'>{errors.currentAge}</span>}
           </div>
         </div>
+      </div>
+
+      <div className='mc-section'>
+        <div className='mc-toggle-row'>
+          <span className='mc-toggle-label'>
+            <span>{tr(lang, 'form.mc.toggleLabel')}</span>
+            <FieldTooltip text={tr(lang, 'form.mc.toggleTip')} />
+          </span>
+          <label className='toggle-switch'>
+            <input type='checkbox' checked={mcEnabled} onChange={(e) => setMcEnabled(e.target.checked)} />
+            <span className='toggle-track' />
+          </label>
+        </div>
+
+        {mcEnabled && (
+          <>
+            <div className='form-grid mc-params-grid'>
+              <div className='field'>
+                <label className='field-label' htmlFor='mcRunCount'>
+                  <span className='field-label-head'>
+                    <span className='field-label-text'>{tr(lang, 'form.mc.runCount.label')}</span>
+                    <FieldTooltip text={tr(lang, 'form.mc.runCount.tip')} />
+                  </span>
+                </label>
+                <div className='field-control'>
+                  <select
+                    id='mcRunCount'
+                    className='mc-select'
+                    value={mcRunCount}
+                    onChange={(e) => setMcRunCount(e.target.value)}
+                  >
+                    {MC_RUN_COUNTS.map((n) => (
+                      <option key={n} value={n}>
+                        {Number(n).toLocaleString()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className='field'>
+                <label className='field-label' htmlFor='mcReturnStdDev'>
+                  <span className='field-label-head'>
+                    <span className='field-label-text'>{tr(lang, 'form.mc.returnStdDev.label')}</span>
+                    <FieldTooltip text={tr(lang, 'form.mc.returnStdDev.tip')} />
+                  </span>
+                </label>
+                <div className='field-control'>
+                  <input
+                    id='mcReturnStdDev'
+                    type='text'
+                    inputMode='decimal'
+                    value={mcReturnStdDev}
+                    onChange={(e) => setMcReturnStdDev(e.target.value)}
+                    className={errors.mcReturnStdDev ? 'input-error' : ''}
+                  />
+                  {errors.mcReturnStdDev && <span className='field-error'>{errors.mcReturnStdDev}</span>}
+                </div>
+              </div>
+
+              <div className='field'>
+                <label className='field-label' htmlFor='mcInflationStdDev'>
+                  <span className='field-label-head'>
+                    <span className='field-label-text'>{tr(lang, 'form.mc.inflationStdDev.label')}</span>
+                    <FieldTooltip text={tr(lang, 'form.mc.inflationStdDev.tip')} />
+                  </span>
+                </label>
+                <div className='field-control'>
+                  <input
+                    id='mcInflationStdDev'
+                    type='text'
+                    inputMode='decimal'
+                    value={mcInflationStdDev}
+                    onChange={(e) => setMcInflationStdDev(e.target.value)}
+                    className={errors.mcInflationStdDev ? 'input-error' : ''}
+                  />
+                  {errors.mcInflationStdDev && <span className='field-error'>{errors.mcInflationStdDev}</span>}
+                </div>
+              </div>
+            </div>
+
+            <div className='mc-run-row'>
+              <button
+                className='mc-run-btn'
+                onClick={onRerunMC}
+                disabled={mcStatus === 'running'}
+                aria-label={tr(lang, 'form.mc.runButton')}
+              >
+                <span className={mcStatus === 'running' ? 'mc-spinner' : 'mc-rerun-icon'} aria-hidden='true'>
+                  {mcStatus === 'running' ? '⟳' : '↺'}
+                </span>
+                {tr(lang, 'form.mc.runButton')}
+              </button>
+              {mcStatus === 'running' && (
+                <span className='mc-status mc-status--running'>
+                  {trParams(lang, 'form.mc.statusRunning', { runs: runsFormatted })}
+                </span>
+              )}
+              {mcStatus === 'done' && (
+                <span className='mc-status mc-status--done'>
+                  ✓ {trParams(lang, 'form.mc.statusDone', { runs: runsFormatted })}
+                </span>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

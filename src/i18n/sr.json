@@ -36,6 +36,25 @@
     "age": {
       "label": "Godine života (opciono)",
       "tip": "Opciono. Kada je uneto, X osa može prikazivati tvoje godine starosti, a u rezultatima se vidi u kojim godinama dostižeš finansijsku slobodu."
+    },
+    "mc": {
+      "toggleLabel": "Monte Karlo mod",
+      "toggleTip": "Pokreće mnogo nasumičnih scenarija kako bi prikazao opseg ishoda na osnovu promenljivosti prinosa i inflacije. Godišnji prinos i inflacija se uzorkuju iz normalne raspodele svake godine.",
+      "runCount": {
+        "label": "Simulacije",
+        "tip": "Broj nezavisnih simulacija. Više simulacija daje glađe percentilne opsege, ali traje nešto duže."
+      },
+      "returnStdDev": {
+        "label": "Std. dev. prinosa (%)",
+        "tip": "Standardna devijacija godišnjeg prinosa — godišnja promenljivost prinosa portfolija. Vrednost 15 znači da oko dve trećine simuliranih godina pada unutar ±15% od proseka prinosa. Istorijski, globalni akcijski indeksi imaju std. devijaciju od oko 15–17%."
+      },
+      "inflationStdDev": {
+        "label": "Std. dev. inflacije (%)",
+        "tip": "Standardna devijacija godišnje inflacije — godišnja promenljivost stope inflacije. Vrednost 2 znači da oko dve trećine simuliranih godina ima inflaciju unutar ±2% od proseka. Istorijski, inflacija u razvijenim ekonomijama varira za oko 2–3 procentna poena godišnje."
+      },
+      "runButton": "Ponovi simulacije",
+      "statusRunning": "Izvršavam {runs} simulacija…",
+      "statusDone": "{runs} simulacija završeno"
     }
   },
   "result": {
@@ -50,6 +69,21 @@
       "noCrossoverTitle": "Presek nije dostignut za {years} god.",
       "noCrossoverSub": "Pokušaj veći doprinos, manji mesečni cilj ili duži horizont.",
       "noCrossoverGap": "Nedostaje još {amount}/god. da bi prinos pokrio troškove."
+    },
+    "mc": {
+      "crossoverTitleByAge": "Medijanski presek u {age}. god. starosti",
+      "crossoverTitleByCalendar": "Medijanski presek u {year}. god.",
+      "crossoverTitleRelative": "Medijanski presek za {years} god.",
+      "crossoverSub": "Medijanski scenario: godišnji prinos premašuje troškove.",
+      "crossoverRange": "p10–p90 opseg: {p10}–{p90} god.",
+      "crossoverRangeByAge": "p10–p90 opseg: {p10}–{p90} god. starosti",
+      "crossoverRangeByCalendar": "p10–p90 opseg: {p10}–{p90}. god.",
+      "noCrossoverTitle": "Nema medijanskog preseka za {years} god.",
+      "noCrossoverSub": "Manje od polovine simulacija dostiže presek. Pokušaj veći doprinos ili duži horizont.",
+      "noCrossoverGap": "Medijanski deficit na kraju: {amount}/god.",
+      "successRate": "Stopa uspeha",
+      "successRateValue": "{pct}% od {runs} simulacija",
+      "modeNote": "Monte Karlo · {runs} sim. · p10–p90 opseg"
     }
   },
   "stats": {
@@ -66,6 +100,7 @@
   },
   "chart": {
     "hint": "Ljubičasta linija (leva osa): ukupan kapital. Crvena i zelena (desna osa): godišnji troškovi i pasivni prinos. Isprekidana linija: tačka preseka.",
+    "hintMc": "Ljubičasti opseg (leva osa): kapital p10–p90, linija: medijana. Zeleni opseg (desna osa): prinos p10–p90, linija: medijana. Crvena: troškovi. Isprekidana: medijanski presek.",
     "legendAria": "Legenda grafikona",
     "axisModeLabel": "X osa:",
     "crossoverLabel": "Presek:",
@@ -81,7 +116,11 @@
     "legend": {
       "capital": "Kapital",
       "expenses": "Godišnji troškovi",
-      "return": "Godišnji prinos (K × %)"
+      "return": "Godišnji prinos (K × %)",
+      "capitalP50": "Kapital (medijana)",
+      "capitalBand": "Kapital p10–p90",
+      "returnP50": "Prinos (medijana)",
+      "returnBand": "Prinos p10–p90"
     }
   },
   "errors": {
