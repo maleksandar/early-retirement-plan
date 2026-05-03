@@ -347,7 +347,14 @@ export default function App() {
     <div className='app'>
       <header className='header'>
         <div className='header-top'>
-          <h1>{tr(lang, 'app.title')}</h1>
+          <div className='header-brand'>
+            <svg className='header-logo' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' aria-hidden='true'>
+              <polyline points='3,27 29,5' stroke='var(--chart-capital)' strokeWidth='2.5' strokeLinecap='round' />
+              <polyline points='3,6 29,25' stroke='var(--chart-return)' strokeWidth='2.5' strokeLinecap='round' />
+              <circle cx='16' cy='16' r='2.5' fill='var(--chart-capital)' />
+            </svg>
+            <h1>{tr(lang, 'app.title')}</h1>
+          </div>
           <div className='header-controls'>
             <select
               className='lang-select'
