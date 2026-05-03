@@ -1,5 +1,5 @@
 import { type Lang, tr, trParams } from '../i18n';
-import { CURRENT_YEAR, type XMode } from '../constants';
+import { CURRENT_YEAR, type XMode, type SimMode } from '../constants';
 import { formatMoney } from '../lib';
 import type { YearPoint, MCResult } from '../model/simulate';
 
@@ -9,6 +9,7 @@ interface OutcomePanelProps {
     series: YearPoint[];
     crossoverYear: number | null;
     invalid: boolean;
+    truncated?: boolean;
   };
   resolvedXMode: XMode;
   ageYears: number | null;
@@ -16,6 +17,9 @@ interface OutcomePanelProps {
   mcEnabled: boolean;
   mcResult: MCResult | null;
   mcRunCount: string;
+  simMode: SimMode;
+  histStartYear?: number;
+  histEndYear?: number | null;
 }
 
 function formatXMode(year: number, resolvedXMode: XMode, ageYears: number | null): string {
@@ -33,6 +37,9 @@ export function OutcomePanel({
   mcEnabled,
   mcResult,
   mcRunCount,
+  simMode,
+  histStartYear,
+  histEndYear,
 }: OutcomePanelProps) {
   const crossoverPoint =
     result.crossoverYear !== null && !result.invalid
@@ -181,7 +188,16 @@ export function OutcomePanel({
     );
   }
 
-  // ── Deterministic mode ──────────────────────────────────────────────────────
+  // ── Deterministic / Historical mode ─────────────────────────────────────────
+  const histNote = simMode === 'hist' && histStartYear != null && histEndYear != null ? (
+    <p className='outcome-mc-note'>
+      {trParams(lang, 'result.hist.modeNote', { startYear: histStartYear, endYear: histEndYear })}
+      {result.truncated
+        ? ` · ${trParams(lang, 'result.hist.truncated', { years: result.series.length - 1, endYear: histEndYear })}`
+        : ''}
+    </p>
+  ) : null;
+
   return (
     <section className='panel outcome-panel'>
       <h2>{tr(lang, 'sections.result')}</h2>
@@ -282,6 +298,7 @@ export function OutcomePanel({
       ) : (
         <p className='warning'>{tr(lang, 'result.noCrossover')}</p>
       )}
+      {histNote}
     </section>
   );
 }

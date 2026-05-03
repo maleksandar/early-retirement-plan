@@ -17,6 +17,7 @@ export type YearPoint = {
 export type SimulationResult = {
   series: YearPoint[]
   crossoverYear: number | null
+  truncated?: boolean
 }
 
 function pctToDecimal(pct: number): number {
@@ -63,6 +64,45 @@ export function simulate(input: SimulationInput): SimulationResult {
   }
 
   return { series, crossoverYear }
+}
+
+// ── Historical ───────────────────────────────────────────────────────────────
+
+export function simulateHistorical(
+  input: Omit<SimulationInput, 'annualReturnPercent' | 'annualInflationPercent'>,
+  rates: { returnPct: number; inflationPct: number }[],
+): SimulationResult {
+  const monthlyNeed = input.monthlyNeedToday
+  const contribYearly = 12 * input.monthlyContribution
+  const H = Math.max(0, Math.floor(input.horizonYears))
+  const effectiveH = Math.min(H, rates.length - 1)
+
+  const series: YearPoint[] = []
+  let k = input.initialCapital
+  let priceLevel = 1
+
+  for (let y = 0; y <= effectiveH; y++) {
+    const r = rates[y].returnPct / 100
+    const annualExpenses = 12 * monthlyNeed * priceLevel
+    const passiveReturn = k * r
+
+    series.push({ year: y, capital: k, annualExpenses, passiveReturn })
+
+    if (y < effectiveH) {
+      k = k * (1 + r) + contribYearly
+      priceLevel *= 1 + rates[y].inflationPct / 100
+    }
+  }
+
+  let crossoverYear: number | null = null
+  for (const p of series) {
+    if (p.passiveReturn >= p.annualExpenses) {
+      crossoverYear = p.year
+      break
+    }
+  }
+
+  return { series, crossoverYear, truncated: effectiveH < H }
 }
 
 // ── Monte Carlo ──────────────────────────────────────────────────────────────
