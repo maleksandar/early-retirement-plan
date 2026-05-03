@@ -353,7 +353,7 @@ export default function App() {
         ageYears={ageYears}
         horizonYears={horizonYears}
         mcEnabled={mcEnabled}
-        mcResult={mcResult?.series.length === result.series.length ? mcResult : null}
+        mcResult={mcEnabled && mcResult?.series.length === result.series.length ? mcResult : null}
         mcRunCount={mcRunCount}
       />
 
@@ -368,7 +368,7 @@ export default function App() {
         setXMode={setXMode}
         crossoverYear={result.crossoverYear}
         invalid={result.invalid}
-        mcResult={mcResult?.series.length === result.series.length ? mcResult : null}
+        mcResult={mcEnabled && mcResult?.series.length === result.series.length ? mcResult : null}
       />
 
       <footer className='footer'>
