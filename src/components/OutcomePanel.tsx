@@ -109,6 +109,20 @@ export function OutcomePanel({
             </div>
             <div className='outcome-stats'>
               <div className='stat'>
+                <span className='stat-label'>{tr(lang, 'stats.yearsFromNow')}</span>
+                <span className='stat-value'>{p50CrossoverYear}</span>
+              </div>
+              <div className='stat'>
+                <span className='stat-label'>{tr(lang, 'stats.calendarYear')}</span>
+                <span className='stat-value'>{CURRENT_YEAR + p50CrossoverYear!}</span>
+              </div>
+              {ageYears !== null && (
+                <div className='stat'>
+                  <span className='stat-label'>{tr(lang, 'stats.ageAt')}</span>
+                  <span className='stat-value'>{ageYears + p50CrossoverYear!}</span>
+                </div>
+              )}
+              <div className='stat'>
                 <span className='stat-label'>{tr(lang, 'stats.capitalAt')}</span>
                 <span className='stat-value'>{formatMoney(mcCrossoverMcPoint?.capitalP50 ?? 0)}</span>
               </div>
@@ -146,6 +160,20 @@ export function OutcomePanel({
               </div>
             </div>
             <div className='outcome-stats'>
+              <div className='stat'>
+                <span className='stat-label'>{tr(lang, 'stats.yearsFromNow')}</span>
+                <span className='stat-value'>{mcFinalPoint?.year}</span>
+              </div>
+              <div className='stat'>
+                <span className='stat-label'>{tr(lang, 'stats.calendarYear')}</span>
+                <span className='stat-value'>{mcFinalPoint ? CURRENT_YEAR + mcFinalPoint.year : '—'}</span>
+              </div>
+              {ageYears !== null && mcFinalPoint && (
+                <div className='stat'>
+                  <span className='stat-label'>{tr(lang, 'stats.ageAt')}</span>
+                  <span className='stat-value'>{ageYears + mcFinalPoint.year}</span>
+                </div>
+              )}
               <div className='stat'>
                 <span className='stat-label'>{tr(lang, 'stats.finalCapital')}</span>
                 <span className='stat-value'>{formatMoney(mcFinalPoint?.capitalP50 ?? 0)}</span>
@@ -222,6 +250,20 @@ export function OutcomePanel({
           </div>
           <div className='outcome-stats'>
             <div className='stat'>
+              <span className='stat-label'>{tr(lang, 'stats.yearsFromNow')}</span>
+              <span className='stat-value'>{crossoverPoint.year}</span>
+            </div>
+            <div className='stat'>
+              <span className='stat-label'>{tr(lang, 'stats.calendarYear')}</span>
+              <span className='stat-value'>{CURRENT_YEAR + crossoverPoint.year}</span>
+            </div>
+            {ageYears !== null && (
+              <div className='stat'>
+                <span className='stat-label'>{tr(lang, 'stats.ageAt')}</span>
+                <span className='stat-value'>{ageYears + crossoverPoint.year}</span>
+              </div>
+            )}
+            <div className='stat'>
               <span className='stat-label'>{tr(lang, 'stats.capitalAt')}</span>
               <span className='stat-value'>{formatMoney(crossoverPoint.capital)}</span>
             </div>
@@ -239,12 +281,6 @@ export function OutcomePanel({
                 <span className='stat-unit'>{py}</span>
               </span>
             </div>
-            {ageYears !== null ? (
-              <div className='stat'>
-                <span className='stat-label'>{tr(lang, 'stats.ageAt')}</span>
-                <span className='stat-value'>{ageYears + crossoverPoint.year}</span>
-              </div>
-            ) : null}
           </div>
           <p className='outcome-note'>
             {trParams(lang, 'result.outcome.crossoverSurplus', {
@@ -265,6 +301,20 @@ export function OutcomePanel({
           </div>
           <div className='outcome-stats'>
             <div className='stat'>
+              <span className='stat-label'>{tr(lang, 'stats.yearsFromNow')}</span>
+              <span className='stat-value'>{finalPoint.year}</span>
+            </div>
+            <div className='stat'>
+              <span className='stat-label'>{tr(lang, 'stats.calendarYear')}</span>
+              <span className='stat-value'>{CURRENT_YEAR + finalPoint.year}</span>
+            </div>
+            {ageYears !== null && (
+              <div className='stat'>
+                <span className='stat-label'>{tr(lang, 'stats.ageAt')}</span>
+                <span className='stat-value'>{ageYears + finalPoint.year}</span>
+              </div>
+            )}
+            <div className='stat'>
               <span className='stat-label'>{tr(lang, 'stats.finalCapital')}</span>
               <span className='stat-value'>{formatMoney(finalPoint.capital)}</span>
             </div>
@@ -282,12 +332,6 @@ export function OutcomePanel({
                 <span className='stat-unit'>{py}</span>
               </span>
             </div>
-            {ageYears !== null ? (
-              <div className='stat'>
-                <span className='stat-label'>{tr(lang, 'stats.ageAt')}</span>
-                <span className='stat-value'>{ageYears + finalPoint.year}</span>
-              </div>
-            ) : null}
           </div>
           <p className='outcome-note outcome-note--warn'>
             {trParams(lang, 'result.outcome.noCrossoverGap', {
