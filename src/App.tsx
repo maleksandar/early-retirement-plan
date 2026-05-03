@@ -260,7 +260,8 @@ export default function App() {
   }, [horizonYears]);
 
   const chartData = useMemo(() => {
-    if (!mcEnabled || !mcResult) {
+    const mcSeriesReady = mcEnabled && mcResult && mcResult.series.length === result.series.length;
+    if (!mcSeriesReady) {
       return result.series.map((p) => ({
         year: p.year,
         capital: p.capital,
@@ -269,7 +270,7 @@ export default function App() {
       }));
     }
     return result.series.map((p, i) => {
-      const mc = mcResult.series[i];
+      const mc = mcResult!.series[i];
       return {
         year: p.year,
         capital: p.capital,
@@ -352,7 +353,7 @@ export default function App() {
         ageYears={ageYears}
         horizonYears={horizonYears}
         mcEnabled={mcEnabled}
-        mcResult={mcResult}
+        mcResult={mcResult?.series.length === result.series.length ? mcResult : null}
         mcRunCount={mcRunCount}
       />
 
@@ -367,7 +368,7 @@ export default function App() {
         setXMode={setXMode}
         crossoverYear={result.crossoverYear}
         invalid={result.invalid}
-        mcResult={mcResult}
+        mcResult={mcResult?.series.length === result.series.length ? mcResult : null}
       />
 
       <footer className='footer'>
