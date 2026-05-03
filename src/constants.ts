@@ -32,6 +32,11 @@ export const HIST_FIRST_YEAR = 1970;
 export const HIST_LAST_YEAR = 2024;
 export const HIST_DEFAULT_START_YEAR = 2000;
 
+export const HIST_CRYPTO_FIRST_YEAR = 2010;
+export const ASSET_HIST_FIRST_YEAR: Partial<Record<import('./data/historical').AssetClass, number>> = {
+  crypto: HIST_CRYPTO_FIRST_YEAR,
+};
+
 export const QP = {
   l: 'l',
   ic: 'ic',
