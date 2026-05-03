@@ -112,7 +112,9 @@
     "finalCapital": "Capital at end",
     "maxIncome": "Max. annual return",
     "finalCost": "Expenses at end",
-    "ageAt": "Age then"
+    "ageAt": "Age then",
+    "yearsFromNow": "Years from now",
+    "calendarYear": "Calendar year"
   },
   "units": {
     "perYear": "/yr."

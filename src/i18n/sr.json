@@ -112,7 +112,9 @@
     "finalCapital": "Kapital na kraju",
     "maxIncome": "Maks. godišnji prinos",
     "finalCost": "Troškovi na kraju",
-    "ageAt": "Starost tada"
+    "ageAt": "Starost tada",
+    "yearsFromNow": "Za koliko godina",
+    "calendarYear": "Kalendarska godina"
   },
   "units": {
     "perYear": "/god."
