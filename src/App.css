@@ -217,6 +217,21 @@
   border-color: var(--warning-text);
 }
 
+.field--disabled .field-label-text {
+  opacity: 0.5;
+}
+
+.field-control input[type='text']:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: var(--text);
+}
+
+.field-control input[type='range']:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .field-error {
   font-size: 0.75rem;
   color: var(--warning-text);
@@ -348,29 +363,93 @@
   background: var(--border);
 }
 
-/* ── Monte Carlo section ── */
+/* ── Simulation mode selector ── */
 
-.mc-section {
+.sim-mode-section {
   margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
   padding-top: 1rem;
   border-top: 1px solid var(--border);
-}
-
-.mc-toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
-.mc-toggle-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
+.sim-mode-label {
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-h);
-  line-height: 1.35;
+  flex-shrink: 0;
+}
+
+.sim-mode-tabs {
+  display: flex;
+  margin-left: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sim-mode-tab {
+  flex: 1;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  border: none;
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.sim-mode-tab:last-child {
+  border-right: none;
+}
+
+.sim-mode-tab--active {
+  background: var(--chart-capital);
+  color: #fff;
+}
+
+.sim-mode-tab:focus-visible {
+  outline: 2px solid var(--accent-border);
+  outline-offset: -2px;
+}
+
+/* ── Historical section ── */
+
+.hist-section {
+  margin-top: 0.875rem;
+}
+
+.hist-message {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+.hist-message--error {
+  color: var(--warning-text);
+}
+
+.field-label-sub {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text);
+  font-weight: 400;
+  margin-top: 0.15rem;
+  opacity: 0.85;
+}
+
+/* ── Monte Carlo section ── */
+
+.mc-section {
+  margin-top: 0.875rem;
 }
 
 .mc-params-grid {

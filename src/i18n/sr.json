@@ -37,6 +37,21 @@
       "label": "Godine života (opciono)",
       "tip": "Opciono. Kada je uneto, X osa može prikazivati tvoje godine starosti, a u rezultatima se vidi u kojim godinama dostižeš finansijsku slobodu."
     },
+    "simMode": {
+      "label": "Režim simulacije",
+      "fixed": "Fiksne stope",
+      "mc": "Monte Karlo",
+      "hist": "Istorijski podaci"
+    },
+    "hist": {
+      "startYearLabel": "Početna godina",
+      "startYearTip": "Kalendarska godina od koje simulacija počinje. Koriste se stvarni godišnji prinosi S&P 500 i američka inflacija CPI od te godine umesto fiksnih stopa.",
+      "dataRange": "Podaci: {first}–{last} (S&P 500 + američki CPI)",
+      "loading": "Učitavanje istorijskih podataka…",
+      "error": "Učitavanje istorijskih podataka nije uspelo. Osvežite stranicu.",
+      "disabledInflationTip": "Ne koristi se u istorijskom modu — stvarna godišnja inflacija (američki CPI) zamenjuje ovu fiksnu stopu.",
+      "disabledReturnTip": "Ne koristi se u istorijskom modu — stvarni godišnji prinosi S&P 500 zamenjuju ovu fiksnu stopu."
+    },
     "mc": {
       "toggleLabel": "Monte Karlo mod",
       "toggleTip": "Pokreće mnogo nasumičnih scenarija kako bi prikazao opseg ishoda na osnovu promenljivosti prinosa i inflacije. Godišnji prinos i inflacija se uzorkuju iz normalne raspodele svake godine.",
@@ -60,6 +75,10 @@
   "result": {
     "invalid": "Unesi horizont od najmanje jedne godine.",
     "noCrossover": "U zadatom horizontu godišnji prinos nikad ne premašuje inflaciono uvećane godišnje troškove.",
+    "hist": {
+      "modeNote": "Istorijski podaci · S&P 500 + američki CPI · {startYear}–{endYear}",
+      "truncated": "horizont ograničen na {years} god. (podaci se završavaju {endYear}. god.)"
+    },
     "outcome": {
       "crossoverTitleByAge": "Finansijska sloboda kada napuniš {age} god.",
       "crossoverTitleByCalendar": "Finansijska sloboda u {year}. god.",

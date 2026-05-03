@@ -45,6 +45,7 @@ export function getErrors(
   currentAge: string,
   lang: Lang,
   mcVals?: { mcReturnStdDev: string; mcInflationStdDev: string },
+  histMode?: boolean,
 ): Partial<Record<FieldKey | 'currentAge' | MCFieldKey, string>> {
   const errors: Partial<Record<FieldKey | 'currentAge' | MCFieldKey, string>> = {};
 
@@ -70,8 +71,10 @@ export function getErrors(
   check('initialCapital', vals.initialCapital, { nonNeg: true });
   check('monthlyNeedToday', vals.monthlyNeedToday, SLIDERS.monthlyNeedToday);
   check('monthlyContribution', vals.monthlyContribution, SLIDERS.monthlyContribution);
-  check('annualInflationPercent', vals.annualInflationPercent, SLIDERS.annualInflationPercent);
-  check('annualReturnPercent', vals.annualReturnPercent, SLIDERS.annualReturnPercent);
+  if (!histMode) {
+    check('annualInflationPercent', vals.annualInflationPercent, SLIDERS.annualInflationPercent);
+    check('annualReturnPercent', vals.annualReturnPercent, SLIDERS.annualReturnPercent);
+  }
   check('horizonYears', vals.horizonYears, SLIDERS.horizonYears);
 
   if (currentAge.trim() !== '' && !isValidAgeInput(currentAge)) {

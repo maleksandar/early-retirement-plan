@@ -37,6 +37,21 @@
       "label": "Age (optional)",
       "tip": "Optional. When set, the X-axis can show your age (current age + simulation year), and results can reference your age at crossover."
     },
+    "simMode": {
+      "label": "Simulation mode",
+      "fixed": "Fixed rates",
+      "mc": "Monte Carlo",
+      "hist": "Historical data"
+    },
+    "hist": {
+      "startYearLabel": "Start year",
+      "startYearTip": "The calendar year the simulation starts from. Historical S&P 500 returns and US CPI inflation from that year are used instead of fixed rates.",
+      "dataRange": "Data: {first}–{last} (S&P 500 + US CPI)",
+      "loading": "Loading historical data…",
+      "error": "Failed to load historical data. Please refresh the page.",
+      "disabledInflationTip": "Not used in historical mode — actual US CPI annual inflation data replaces this fixed rate.",
+      "disabledReturnTip": "Not used in historical mode — actual S&P 500 annual returns replace this fixed rate."
+    },
     "mc": {
       "toggleLabel": "Monte Carlo mode",
       "toggleTip": "Runs many randomised scenarios to show a range of outcomes based on return and inflation volatility. The annual return and inflation are sampled from a normal distribution each year.",
@@ -60,6 +75,10 @@
   "result": {
     "invalid": "Enter a horizon of at least one year.",
     "noCrossover": "Within the given horizon, annual return never exceeds inflation-adjusted annual expenses.",
+    "hist": {
+      "modeNote": "Historical data · S&P 500 + US CPI · {startYear}–{endYear}",
+      "truncated": "horizon capped at {years} years (data ends {endYear})"
+    },
     "outcome": {
       "crossoverTitleByAge": "Financial freedom when you reach age {age}",
       "crossoverTitleByCalendar": "Financial freedom in {year}",
