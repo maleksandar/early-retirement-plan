@@ -36,6 +36,25 @@
     "age": {
       "label": "Age (optional)",
       "tip": "Optional. When set, the X-axis can show your age (current age + simulation year), and results can reference your age at crossover."
+    },
+    "mc": {
+      "toggleLabel": "Monte Carlo mode",
+      "toggleTip": "Runs many randomised scenarios to show a range of outcomes based on return and inflation volatility. The annual return and inflation are sampled from a normal distribution each year.",
+      "runCount": {
+        "label": "Simulations",
+        "tip": "Number of independent simulation runs. More runs give smoother percentile bands but take slightly longer."
+      },
+      "returnStdDev": {
+        "label": "Return std. dev. (%)",
+        "tip": "Annual return standard deviation — year-to-year variability of the portfolio return. A value of 5 means roughly two-thirds of simulated years fall within ±5% of the mean return."
+      },
+      "inflationStdDev": {
+        "label": "Inflation std. dev. (%)",
+        "tip": "Annual inflation standard deviation — year-to-year variability of the inflation rate. A value of 1 means roughly two-thirds of simulated years fall within ±1% of the mean inflation."
+      },
+      "runButton": "Re-run simulations",
+      "statusRunning": "Running {runs} simulations…",
+      "statusDone": "{runs} simulations complete"
     }
   },
   "result": {
@@ -50,6 +69,21 @@
       "noCrossoverTitle": "No crossover within {years} years",
       "noCrossoverSub": "Try a higher contribution, lower monthly need, or longer horizon.",
       "noCrossoverGap": "Gap to cover: {amount}/yr between return and expenses."
+    },
+    "mc": {
+      "crossoverTitleByAge": "Median crossover at age {age}",
+      "crossoverTitleByCalendar": "Median crossover in {year}",
+      "crossoverTitleRelative": "Median crossover in {years} years",
+      "crossoverSub": "Median scenario: annual return exceeds expenses.",
+      "crossoverRange": "p10–p90 range: {p10}–{p90} years",
+      "crossoverRangeByAge": "p10–p90 range: age {p10}–{p90}",
+      "crossoverRangeByCalendar": "p10–p90 range: {p10}–{p90}",
+      "noCrossoverTitle": "No median crossover within {years} years",
+      "noCrossoverSub": "Fewer than half the simulations reach crossover. Try a higher contribution or longer horizon.",
+      "noCrossoverGap": "Median gap at end: {amount}/yr",
+      "successRate": "Success rate",
+      "successRateValue": "{pct}% of {runs} runs",
+      "modeNote": "Monte Carlo · {runs} runs · p10–p90 band"
     }
   },
   "stats": {
@@ -66,6 +100,7 @@
   },
   "chart": {
     "hint": "Purple line (left axis): total capital. Red and green (right axis): annual expenses and passive return. Dashed line: crossover point.",
+    "hintMc": "Purple band (left axis): capital p10–p90 range, solid line: median. Green band (right axis): return p10–p90, solid line: median. Red: expenses. Dashed: median crossover.",
     "legendAria": "Chart legend",
     "axisModeLabel": "X axis:",
     "crossoverLabel": "Crossover:",
@@ -81,7 +116,11 @@
     "legend": {
       "capital": "Capital",
       "expenses": "Annual expenses",
-      "return": "Annual return (C × %)"
+      "return": "Annual return (C × %)",
+      "capitalP50": "Capital (median)",
+      "capitalBand": "Capital p10–p90",
+      "returnP50": "Return (median)",
+      "returnBand": "Return p10–p90"
     }
   },
   "errors": {

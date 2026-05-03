@@ -11,6 +11,10 @@ export function readUrlState(): {
   horizonYears?: string;
   currentAge?: string;
   xMode?: XMode;
+  mcEnabled?: boolean;
+  mcRunCount?: string;
+  mcReturnStdDev?: string;
+  mcInflationStdDev?: string;
 } {
   if (typeof window === 'undefined') return {};
   const sp = new URLSearchParams(window.location.search);
@@ -26,6 +30,10 @@ export function readUrlState(): {
   if (g(QP.a) != null && g(QP.a) !== '') o.currentAge = g(QP.a)!;
   const xv = g(QP.x);
   if (xv === 'rel' || xv === 'cal' || xv === 'age') o.xMode = xv;
+  if (g(QP.mce) === '1') o.mcEnabled = true;
+  if (g(QP.mcn) != null && g(QP.mcn) !== '') o.mcRunCount = g(QP.mcn)!;
+  if (g(QP.mcrs) != null && g(QP.mcrs) !== '') o.mcReturnStdDev = g(QP.mcrs)!;
+  if (g(QP.mcis) != null && g(QP.mcis) !== '') o.mcInflationStdDev = g(QP.mcis)!;
   return o;
 }
 
@@ -39,6 +47,10 @@ export function buildSearchParams(state: {
   horizonYears: string;
   currentAge: string;
   xMode: XMode;
+  mcEnabled: boolean;
+  mcRunCount: string;
+  mcReturnStdDev: string;
+  mcInflationStdDev: string;
 }): string {
   const sp = new URLSearchParams();
   sp.set(QP.l, state.lang);
@@ -50,5 +62,11 @@ export function buildSearchParams(state: {
   sp.set(QP.h, state.horizonYears);
   if (state.currentAge.trim() !== '') sp.set(QP.a, state.currentAge);
   sp.set(QP.x, state.xMode);
+  if (state.mcEnabled) {
+    sp.set(QP.mce, '1');
+    sp.set(QP.mcn, state.mcRunCount);
+    sp.set(QP.mcrs, state.mcReturnStdDev);
+    sp.set(QP.mcis, state.mcInflationStdDev);
+  }
   return sp.toString();
 }

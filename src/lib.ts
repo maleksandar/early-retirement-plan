@@ -38,14 +38,17 @@ export function parseAgeYears(s: string): number | null {
   return Math.floor(parseNum(s));
 }
 
+export type MCFieldKey = 'mcReturnStdDev' | 'mcInflationStdDev';
+
 export function getErrors(
   vals: Record<FieldKey, string>,
   currentAge: string,
   lang: Lang,
-): Partial<Record<FieldKey | 'currentAge', string>> {
-  const errors: Partial<Record<FieldKey | 'currentAge', string>> = {};
+  mcVals?: { mcReturnStdDev: string; mcInflationStdDev: string },
+): Partial<Record<FieldKey | 'currentAge' | MCFieldKey, string>> {
+  const errors: Partial<Record<FieldKey | 'currentAge' | MCFieldKey, string>> = {};
 
-  function check(key: FieldKey, val: string, opts: { min?: number; max?: number; nonNeg?: boolean } = {}) {
+  function check(key: FieldKey | MCFieldKey, val: string, opts: { min?: number; max?: number; nonNeg?: boolean } = {}) {
     const n = parseNum(val);
     if (val.trim() === '' || !Number.isFinite(parseFloat(val.replace(',', '.')))) {
       errors[key] = tr(lang, 'errors.notNumber');
@@ -73,6 +76,11 @@ export function getErrors(
 
   if (currentAge.trim() !== '' && !isValidAgeInput(currentAge)) {
     errors.currentAge = tr(lang, 'errors.age');
+  }
+
+  if (mcVals) {
+    check('mcReturnStdDev', mcVals.mcReturnStdDev, { nonNeg: true, max: 20 });
+    check('mcInflationStdDev', mcVals.mcInflationStdDev, { nonNeg: true, max: 10 });
   }
 
   return errors;
