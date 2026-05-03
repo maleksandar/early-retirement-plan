@@ -44,7 +44,6 @@ interface SimulationChartProps {
   mcResult: MCResult | null;
 }
 
-const MC_BAND_KEYS = new Set(['capitalP10', 'capitalBand', 'passiveReturnP10', 'passiveReturnBand', 'expensesP10', 'expensesBand']);
 
 export function SimulationChart({
   lang,
@@ -141,7 +140,7 @@ export function SimulationChart({
             />
             <Tooltip
               content={(props) => {
-                const { active, payload, label } = props as {
+                const { active, payload, label } = props as unknown as {
                   active?: boolean;
                   payload?: Array<{ dataKey?: string; value?: unknown; name?: unknown; color?: string }>;
                   label?: number;
