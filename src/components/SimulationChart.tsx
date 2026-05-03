@@ -2,7 +2,6 @@ import {
   Area,
   CartesianGrid,
   ComposedChart,
-  Legend,
   Line,
   ReferenceLine,
   ResponsiveContainer,
@@ -141,16 +140,67 @@ export function SimulationChart({
               tickMargin={4}
             />
             <Tooltip
-              formatter={(value, name, props) => {
-                if (MC_BAND_KEYS.has(props.dataKey as string)) return null;
-                return [formatMoney(Number(value ?? 0)), String(name ?? '')];
+              content={(props) => {
+                const { active, payload, label } = props as {
+                  active?: boolean;
+                  payload?: Array<{ dataKey?: string; value?: unknown; name?: unknown; color?: string }>;
+                  label?: number;
+                };
+                if (!active || !payload?.length || label === undefined) return null;
+                const yr = label;
+                const xLabel = `${resolvedXMode === 'age' ? tr(lang, 'chart.labels.age') : tr(lang, 'chart.labels.year')} ${formatX(yr)}`;
+                const box = {
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '6px',
+                  padding: '8px 12px',
+                  fontSize: '12px',
+                  lineHeight: '1.75',
+                } as const;
+                if (!isMC) {
+                  return (
+                    <div style={box}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-h)', marginBottom: '2px' }}>{xLabel}</div>
+                      {payload.map((p, i) => (
+                        <div key={i} style={{ color: p.color ?? 'var(--text)' }}>
+                          {String(p.name ?? '')}: {formatMoney(Number(p.value ?? 0))}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }
+                const v: Record<string, number> = {};
+                for (const p of payload) { if (p.dataKey) v[p.dataKey] = Number(p.value ?? 0); }
+                const capP10 = v.capitalP10 ?? 0;
+                const capP90 = capP10 + (v.capitalBand ?? 0);
+                const retP10 = v.passiveReturnP10 ?? 0;
+                const retP90 = retP10 + (v.passiveReturnBand ?? 0);
+                const expP10 = v.expensesP10 ?? 0;
+                const expP90 = expP10 + (v.expensesBand ?? 0);
+                let hint = '';
+                if (mcResult!.crossoverP10Year === yr) hint = tr(lang, 'chart.crossoverP10Hint');
+                else if (mcResult!.crossoverP90Year === yr) hint = tr(lang, 'chart.crossoverP90Hint');
+                const rng = { opacity: 0.6, fontSize: '11px' } as const;
+                return (
+                  <div style={box}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-h)' }}>{xLabel}</div>
+                    {hint && <div style={{ fontSize: '11px', color: 'var(--chart-cross)', marginBottom: '2px' }}>{hint}</div>}
+                    <div style={{ color: 'var(--chart-capital)' }}>
+                      {tr(lang, 'chart.legend.capitalP50')}: {formatMoney(v.capitalP50 ?? 0)}
+                      <span style={rng}> ({formatMoney(capP10)}–{formatMoney(capP90)})</span>
+                    </div>
+                    <div style={{ color: 'var(--chart-return)' }}>
+                      {tr(lang, 'chart.legend.returnP50')}: {formatMoney(v.passiveReturnP50 ?? 0)}
+                      <span style={rng}> ({formatMoney(retP10)}–{formatMoney(retP90)})</span>
+                    </div>
+                    <div style={{ color: 'var(--chart-expenses)' }}>
+                      {tr(lang, 'chart.legend.expensesP50')}: {formatMoney(v.expensesP50 ?? 0)}
+                      <span style={rng}> ({formatMoney(expP10)}–{formatMoney(expP90)})</span>
+                    </div>
+                  </div>
+                );
               }}
-              labelFormatter={(y) =>
-                `${resolvedXMode === 'age' ? tr(lang, 'chart.labels.age') : tr(lang, 'chart.labels.year')} ${formatX(y as number)}`
-              }
             />
-            {!chartNarrow ? <Legend verticalAlign='top' height={30} /> : null}
-
             {isMC ? (
               <>
                 {/* Capital band (p10–p90) */}
@@ -302,10 +352,41 @@ export function SimulationChart({
                 }}
               />
             ) : null}
+            {isMC && mcResult!.crossoverP10Year !== null && !invalid ? (
+              <ReferenceLine
+                x={mcResult!.crossoverP10Year}
+                stroke='var(--chart-cross)'
+                strokeWidth={1.5}
+                strokeOpacity={0.5}
+                strokeDasharray='3 3'
+                label={{
+                  value: `${tr(lang, 'chart.crossoverP10Label')} ${formatX(mcResult!.crossoverP10Year)}`,
+                  position: 'insideTopRight',
+                  fill: 'var(--text-h)',
+                  fontSize: 11,
+                  opacity: 0.7,
+                }}
+              />
+            ) : null}
+            {isMC && mcResult!.crossoverP90Year !== null && !invalid ? (
+              <ReferenceLine
+                x={mcResult!.crossoverP90Year}
+                stroke='var(--chart-cross)'
+                strokeWidth={1.5}
+                strokeOpacity={0.5}
+                strokeDasharray='3 3'
+                label={{
+                  value: `${tr(lang, 'chart.crossoverP90Label')} ${formatX(mcResult!.crossoverP90Year)}`,
+                  position: 'insideTopLeft',
+                  fill: 'var(--text-h)',
+                  fontSize: 11,
+                  opacity: 0.7,
+                }}
+              />
+            ) : null}
           </ComposedChart>
         </ResponsiveContainer>
-        {chartNarrow ? (
-          <ul className='chart-legend-external' aria-label={tr(lang, 'chart.legendAria')}>
+        <ul className='chart-legend-external' aria-label={tr(lang, 'chart.legendAria')}>
             {isMC ? (
               <>
                 <li>
@@ -350,7 +431,6 @@ export function SimulationChart({
               </>
             )}
           </ul>
-        ) : null}
       </div>
     </section>
   );

@@ -39,9 +39,9 @@
     },
     "simMode": {
       "label": "Simulation mode",
-      "fixed": "Fixed rates",
+      "fixed": "Fixed",
       "mc": "Monte Carlo",
-      "hist": "Historical data"
+      "hist": "Historical"
     },
     "hist": {
       "startYearLabel": "Start year",
@@ -80,9 +80,8 @@
       "truncated": "horizon capped at {years} years (data ends {endYear})"
     },
     "outcome": {
-      "crossoverTitleByAge": "Financial freedom when you reach age {age}",
-      "crossoverTitleByCalendar": "Financial freedom in {year}",
-      "crossoverTitleRelative": "Financial freedom in {years} years",
+      "crossoverTitle": "Financial freedom in {years} years ({year})",
+      "crossoverTitleAge": "Financial freedom in {years} years ({year}) · age {age}",
       "crossoverSub": "Annual portfolio return exceeds inflation-adjusted expenses.",
       "crossoverSurplus": "Annual surplus: {amount} — return exceeds expenses every year from this point.",
       "noCrossoverTitle": "No crossover within {years} years",
@@ -90,13 +89,12 @@
       "noCrossoverGap": "Gap to cover: {amount}/yr between return and expenses."
     },
     "mc": {
-      "crossoverTitleByAge": "Median crossover at age {age}",
-      "crossoverTitleByCalendar": "Median crossover in {year}",
-      "crossoverTitleRelative": "Median crossover in {years} years",
+      "crossoverTitle": "Median crossover in {years} years ({year})",
+      "crossoverTitleAge": "Median crossover in {years} years ({year}) · age {age}",
       "crossoverSub": "Median scenario: annual return exceeds expenses.",
       "crossoverRange": "p10–p90 range: {p10}–{p90} years",
-      "crossoverRangeByAge": "p10–p90 range: age {p10}–{p90}",
-      "crossoverRangeByCalendar": "p10–p90 range: {p10}–{p90}",
+      "crossoverRangeCombined": "p10–p90 range: {p10}–{p90} years ({cy10}–{cy90})",
+      "crossoverRangeCombinedAge": "p10–p90 range: {p10}–{p90} years · age {a10}–{a90}",
       "noCrossoverTitle": "No median crossover within {years} years",
       "noCrossoverSub": "The median scenario does not reach crossover within the horizon. Try a higher contribution or longer horizon.",
       "noCrossoverGap": "Median gap at end: {amount}/yr",
@@ -140,9 +138,15 @@
       "return": "Annual return (C × %)",
       "capitalP50": "Capital (median)",
       "capitalBand": "Capital p10–p90",
+      "expensesP50": "Expenses (median)",
+      "expensesBand": "Expenses p10–p90",
       "returnP50": "Return (median)",
       "returnBand": "Return p10–p90"
-    }
+    },
+    "crossoverP10Label": "p10:",
+    "crossoverP90Label": "p90:",
+    "crossoverP10Hint": "p10 crossover — only 10% of scenarios reach freedom this early",
+    "crossoverP90Hint": "p90 crossover — 90% of scenarios reach freedom by this year"
   },
   "errors": {
     "notNumber": "Enter a valid number",

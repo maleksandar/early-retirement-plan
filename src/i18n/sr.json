@@ -39,9 +39,9 @@
     },
     "simMode": {
       "label": "Režim simulacije",
-      "fixed": "Fiksne stope",
+      "fixed": "Fiksno",
       "mc": "Monte Karlo",
-      "hist": "Istorijski podaci"
+      "hist": "Istorijski"
     },
     "hist": {
       "startYearLabel": "Početna godina",
@@ -80,9 +80,8 @@
       "truncated": "horizont ograničen na {years} god. (podaci se završavaju {endYear}. god.)"
     },
     "outcome": {
-      "crossoverTitleByAge": "Finansijska sloboda kada napuniš {age} god.",
-      "crossoverTitleByCalendar": "Finansijska sloboda u {year}. god.",
-      "crossoverTitleRelative": "Finansijska sloboda za {years} god.",
+      "crossoverTitle": "Finansijska sloboda za {years} god. ({year})",
+      "crossoverTitleAge": "Finansijska sloboda za {years} god. ({year}) · starost {age} god.",
       "crossoverSub": "Godišnji prinos portfolija premašuje inflacijom uvećane troškove.",
       "crossoverSurplus": "Godišnji suficit: {amount} — prinos svake naredne godine premašuje troškove.",
       "noCrossoverTitle": "Presek nije dostignut za {years} god.",
@@ -90,13 +89,12 @@
       "noCrossoverGap": "Nedostaje još {amount}/god. da bi prinos pokrio troškove."
     },
     "mc": {
-      "crossoverTitleByAge": "Medijanski presek u {age}. god. starosti",
-      "crossoverTitleByCalendar": "Medijanski presek u {year}. god.",
-      "crossoverTitleRelative": "Medijanski presek za {years} god.",
+      "crossoverTitle": "Medijanski presek za {years} god. ({year})",
+      "crossoverTitleAge": "Medijanski presek za {years} god. ({year}) · starost {age} god.",
       "crossoverSub": "Medijanski scenario: godišnji prinos premašuje troškove.",
       "crossoverRange": "p10–p90 opseg: {p10}–{p90} god.",
-      "crossoverRangeByAge": "p10–p90 opseg: {p10}–{p90} god. starosti",
-      "crossoverRangeByCalendar": "p10–p90 opseg: {p10}–{p90}. god.",
+      "crossoverRangeCombined": "p10–p90 opseg: {p10}–{p90} god. ({cy10}–{cy90})",
+      "crossoverRangeCombinedAge": "p10–p90 opseg: {p10}–{p90} god. · starost {a10}–{a90} god.",
       "noCrossoverTitle": "Nema medijanskog preseka za {years} god.",
       "noCrossoverSub": "Medijanski scenario ne dostiže presek unutar horizonta. Pokušaj veći doprinos ili duži horizont.",
       "noCrossoverGap": "Medijanski deficit na kraju: {amount}/god.",
@@ -140,9 +138,15 @@
       "return": "Godišnji prinos (K × %)",
       "capitalP50": "Kapital (medijana)",
       "capitalBand": "Kapital p10–p90",
+      "expensesP50": "Troškovi (medijana)",
+      "expensesBand": "Troškovi p10–p90",
       "returnP50": "Prinos (medijana)",
       "returnBand": "Prinos p10–p90"
-    }
+    },
+    "crossoverP10Label": "p10:",
+    "crossoverP90Label": "p90:",
+    "crossoverP10Hint": "p10 presek — samo 10% scenarija dostiže slobodu ovako rano",
+    "crossoverP90Hint": "p90 presek — 90% scenarija dostiže slobodu do ove tačke"
   },
   "errors": {
     "notNumber": "Unesite ispravan broj",

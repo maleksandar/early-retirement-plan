@@ -1,5 +1,5 @@
 import { type Lang, tr, trParams } from '../i18n';
-import { CURRENT_YEAR, type XMode, type SimMode } from '../constants';
+import { CURRENT_YEAR, type SimMode } from '../constants';
 import { formatMoney } from '../lib';
 import type { YearPoint, MCResult } from '../model/simulate';
 
@@ -11,7 +11,6 @@ interface OutcomePanelProps {
     invalid: boolean;
     truncated?: boolean;
   };
-  resolvedXMode: XMode;
   ageYears: number | null;
   horizonYears: string;
   mcEnabled: boolean;
@@ -22,16 +21,9 @@ interface OutcomePanelProps {
   histEndYear?: number | null;
 }
 
-function formatXMode(year: number, resolvedXMode: XMode, ageYears: number | null): string {
-  if (resolvedXMode === 'cal') return String(CURRENT_YEAR + year);
-  if (resolvedXMode === 'age' && ageYears !== null) return String(ageYears + year);
-  return String(year);
-}
-
 export function OutcomePanel({
   lang,
   result,
-  resolvedXMode,
   ageYears,
   horizonYears,
   mcEnabled,
@@ -66,26 +58,35 @@ export function OutcomePanel({
 
     const crossoverTitle = () => {
       if (p50CrossoverYear === null) return null;
-      if (resolvedXMode === 'age' && ageYears !== null) {
-        return trParams(lang, 'result.mc.crossoverTitleByAge', { age: ageYears + p50CrossoverYear });
+      if (ageYears !== null) {
+        return trParams(lang, 'result.mc.crossoverTitleAge', {
+          years: p50CrossoverYear,
+          year: CURRENT_YEAR + p50CrossoverYear,
+          age: ageYears + p50CrossoverYear,
+        });
       }
-      if (resolvedXMode === 'cal') {
-        return trParams(lang, 'result.mc.crossoverTitleByCalendar', { year: CURRENT_YEAR + p50CrossoverYear });
-      }
-      return trParams(lang, 'result.mc.crossoverTitleRelative', { years: p50CrossoverYear });
+      return trParams(lang, 'result.mc.crossoverTitle', {
+        years: p50CrossoverYear,
+        year: CURRENT_YEAR + p50CrossoverYear,
+      });
     };
 
     const crossoverRange = () => {
       if (crossoverP10Year === null || crossoverP90Year === null) return null;
-      const p10 = formatXMode(crossoverP10Year, resolvedXMode, ageYears);
-      const p90 = formatXMode(crossoverP90Year, resolvedXMode, ageYears);
-      if (resolvedXMode === 'age' && ageYears !== null) {
-        return trParams(lang, 'result.mc.crossoverRangeByAge', { p10, p90 });
+      if (ageYears !== null) {
+        return trParams(lang, 'result.mc.crossoverRangeCombinedAge', {
+          p10: crossoverP10Year,
+          p90: crossoverP90Year,
+          a10: ageYears + crossoverP10Year,
+          a90: ageYears + crossoverP90Year,
+        });
       }
-      if (resolvedXMode === 'cal') {
-        return trParams(lang, 'result.mc.crossoverRangeByCalendar', { p10, p90 });
-      }
-      return trParams(lang, 'result.mc.crossoverRange', { p10, p90 });
+      return trParams(lang, 'result.mc.crossoverRangeCombined', {
+        p10: crossoverP10Year,
+        p90: crossoverP90Year,
+        cy10: CURRENT_YEAR + crossoverP10Year,
+        cy90: CURRENT_YEAR + crossoverP90Year,
+      });
     };
 
     const mcCrossoverMcPoint =
@@ -235,15 +236,16 @@ export function OutcomePanel({
             <span className='outcome-badge outcome-badge--success'>✓</span>
             <div>
               <p className='outcome-title'>
-                {resolvedXMode === 'age' && ageYears !== null
-                  ? trParams(lang, 'result.outcome.crossoverTitleByAge', {
+                {ageYears !== null
+                  ? trParams(lang, 'result.outcome.crossoverTitleAge', {
+                      years: crossoverPoint.year,
+                      year: CURRENT_YEAR + crossoverPoint.year,
                       age: ageYears + crossoverPoint.year,
                     })
-                  : resolvedXMode === 'cal'
-                    ? trParams(lang, 'result.outcome.crossoverTitleByCalendar', {
-                        year: CURRENT_YEAR + crossoverPoint.year,
-                      })
-                    : trParams(lang, 'result.outcome.crossoverTitleRelative', { years: crossoverPoint.year })}
+                  : trParams(lang, 'result.outcome.crossoverTitle', {
+                      years: crossoverPoint.year,
+                      year: CURRENT_YEAR + crossoverPoint.year,
+                    })}
               </p>
               <p className='outcome-sub'>{tr(lang, 'result.outcome.crossoverSub')}</p>
             </div>

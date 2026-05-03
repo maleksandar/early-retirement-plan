@@ -414,7 +414,6 @@ export default function App() {
       <OutcomePanel
         lang={lang}
         result={result}
-        resolvedXMode={resolvedXMode}
         ageYears={ageYears}
         horizonYears={horizonYears}
         mcEnabled={mcEnabled}
