@@ -26,6 +26,11 @@ export type FieldKey =
   | 'horizonYears';
 
 export type XMode = 'rel' | 'cal' | 'age';
+export type SimMode = 'fixed' | 'mc' | 'hist';
+
+export const HIST_FIRST_YEAR = 1970;
+export const HIST_LAST_YEAR = 2024;
+export const HIST_DEFAULT_START_YEAR = 2000;
 
 export const QP = {
   l: 'l',
@@ -41,6 +46,8 @@ export const QP = {
   mcn: 'mcn',
   mcrs: 'mcrs',
   mcis: 'mcis',
+  sm: 'sm',
+  hy: 'hy',
 } as const;
 
 export const MC_DEFAULTS = {

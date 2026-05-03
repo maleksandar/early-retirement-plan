@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { tr, type Lang } from './i18n';
-import { simulate, type MCResult, type MonteCarloInput } from './model/simulate';
-import { DEFAULTS, MC_DEFAULTS, type XMode } from './constants';
+import { simulate, simulateHistorical, type MCResult, type MonteCarloInput } from './model/simulate';
+import { DEFAULTS, MC_DEFAULTS, HIST_DEFAULT_START_YEAR, type XMode, type SimMode } from './constants';
 import { parseNum, parseAgeYears, getErrors } from './lib';
 import { readUrlState, buildSearchParams } from './url';
+import { fetchHistoricalRates, type HistoricalRate } from './data/historical';
 import { InputForm } from './components/InputForm';
 import { OutcomePanel } from './components/OutcomePanel';
 import { SimulationChart } from './components/SimulationChart';
@@ -51,17 +52,27 @@ export default function App() {
     return fromUrl;
   });
 
+  const [simMode, setSimMode] = useState<SimMode>(() => urlInit.simMode ?? 'fixed');
+  const [histStartYear, setHistStartYear] = useState<number>(
+    () => urlInit.histStartYear ?? HIST_DEFAULT_START_YEAR,
+  );
+
   // Monte Carlo params
-  const [mcEnabled, setMcEnabled] = useState(() => urlInit.mcEnabled ?? MC_DEFAULTS.mcEnabled);
   const [mcRunCount, setMcRunCount] = useState(() => urlInit.mcRunCount ?? MC_DEFAULTS.mcRunCount);
   const [mcReturnStdDev, setMcReturnStdDev] = useState(() => urlInit.mcReturnStdDev ?? MC_DEFAULTS.mcReturnStdDev);
   const [mcInflationStdDev, setMcInflationStdDev] = useState(
     () => urlInit.mcInflationStdDev ?? MC_DEFAULTS.mcInflationStdDev,
   );
 
+  const mcEnabled = simMode === 'mc';
+
   // Monte Carlo result state
   const [mcResult, setMcResult] = useState<MCResult | null>(null);
   const [mcStatus, setMcStatus] = useState<MCStatus>('idle');
+
+  // Historical data state
+  const [histData, setHistData] = useState<HistoricalRate[] | null>(null);
+  const [histDataError, setHistDataError] = useState<string | null>(null);
 
   // Worker management
   const workerRef = useRef<Worker | null>(null);
@@ -89,6 +100,13 @@ export default function App() {
     return () => { workerRef.current?.terminate(); };
   }, []);
 
+  // Fetch historical data on mount
+  useEffect(() => {
+    fetchHistoricalRates()
+      .then(setHistData)
+      .catch((e: unknown) => setHistDataError(String(e)));
+  }, []);
+
   const ageYears = useMemo(() => parseAgeYears(currentAge), [currentAge]);
 
   const resolvedXMode = useMemo((): XMode => {
@@ -107,10 +125,11 @@ export default function App() {
       horizonYears,
       currentAge,
       xMode: resolvedXMode,
-      mcEnabled,
+      simMode,
       mcRunCount,
       mcReturnStdDev,
       mcInflationStdDev,
+      histStartYear,
     });
     const path = `${window.location.pathname}?${qs}`;
     window.history.replaceState(null, '', path);
@@ -124,10 +143,11 @@ export default function App() {
     horizonYears,
     currentAge,
     resolvedXMode,
-    mcEnabled,
+    simMode,
     mcRunCount,
     mcReturnStdDev,
     mcInflationStdDev,
+    histStartYear,
   ]);
 
   const errors = useMemo(
@@ -143,7 +163,8 @@ export default function App() {
         },
         currentAge,
         lang,
-        mcEnabled ? { mcReturnStdDev, mcInflationStdDev } : undefined,
+        simMode === 'mc' ? { mcReturnStdDev, mcInflationStdDev } : undefined,
+        simMode === 'hist',
       ),
     [
       initialCapital,
@@ -154,30 +175,58 @@ export default function App() {
       horizonYears,
       currentAge,
       lang,
-      mcEnabled,
+      simMode,
       mcReturnStdDev,
       mcInflationStdDev,
     ],
   );
 
   const result = useMemo(() => {
-    const input = {
+    const baseInput = {
       initialCapital: parseNum(initialCapital),
       monthlyNeedToday: parseNum(monthlyNeedToday),
-      annualInflationPercent: parseNum(annualInflationPercent),
       monthlyContribution: parseNum(monthlyContribution),
-      annualReturnPercent: parseNum(annualReturnPercent),
       horizonYears: parseNum(horizonYears),
     };
-    if (input.horizonYears < 1) {
+    if (baseInput.horizonYears < 1) {
       return {
         series: [] as { year: number; capital: number; annualExpenses: number; passiveReturn: number }[],
         crossoverYear: null as number | null,
+        truncated: false,
         invalid: true,
       };
     }
-    return { ...simulate(input), invalid: false };
+    if (simMode === 'hist') {
+      if (!histData) {
+        return {
+          series: [] as { year: number; capital: number; annualExpenses: number; passiveReturn: number }[],
+          crossoverYear: null as number | null,
+          truncated: false,
+          invalid: true,
+        };
+      }
+      const startIdx = histData.findIndex((d) => d.year === histStartYear);
+      if (startIdx === -1) {
+        return {
+          series: [] as { year: number; capital: number; annualExpenses: number; passiveReturn: number }[],
+          crossoverYear: null as number | null,
+          truncated: false,
+          invalid: true,
+        };
+      }
+      const rates = histData.slice(startIdx);
+      return { ...simulateHistorical(baseInput, rates), invalid: false };
+    }
+    const input = {
+      ...baseInput,
+      annualInflationPercent: parseNum(annualInflationPercent),
+      annualReturnPercent: parseNum(annualReturnPercent),
+    };
+    return { ...simulate(input), truncated: false, invalid: false };
   }, [
+    simMode,
+    histData,
+    histStartYear,
     initialCapital,
     monthlyNeedToday,
     annualInflationPercent,
@@ -289,6 +338,11 @@ export default function App() {
     });
   }, [result, mcResult, mcEnabled]);
 
+  const histEndYear = useMemo(() => {
+    if (simMode !== 'hist' || result.series.length === 0) return null;
+    return histStartYear + result.series[result.series.length - 1].year;
+  }, [simMode, histStartYear, result.series]);
+
   return (
     <div className='app'>
       <header className='header'>
@@ -334,8 +388,12 @@ export default function App() {
         setHorizonYears={setHorizonYears}
         currentAge={currentAge}
         setCurrentAge={setCurrentAge}
-        mcEnabled={mcEnabled}
-        setMcEnabled={setMcEnabled}
+        simMode={simMode}
+        setSimMode={setSimMode}
+        histStartYear={histStartYear}
+        setHistStartYear={setHistStartYear}
+        histData={histData}
+        histDataError={histDataError}
         mcRunCount={mcRunCount}
         setMcRunCount={setMcRunCount}
         mcReturnStdDev={mcReturnStdDev}
@@ -355,6 +413,9 @@ export default function App() {
         mcEnabled={mcEnabled}
         mcResult={mcEnabled && mcResult?.series.length === result.series.length ? mcResult : null}
         mcRunCount={mcRunCount}
+        simMode={simMode}
+        histStartYear={histStartYear}
+        histEndYear={histEndYear}
       />
 
       <SimulationChart
