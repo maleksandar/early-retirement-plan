@@ -98,7 +98,7 @@
       "crossoverRangeByAge": "p10–p90 range: age {p10}–{p90}",
       "crossoverRangeByCalendar": "p10–p90 range: {p10}–{p90}",
       "noCrossoverTitle": "No median crossover within {years} years",
-      "noCrossoverSub": "Fewer than half the simulations reach crossover. Try a higher contribution or longer horizon.",
+      "noCrossoverSub": "The median scenario does not reach crossover within the horizon. Try a higher contribution or longer horizon.",
       "noCrossoverGap": "Median gap at end: {amount}/yr",
       "successRate": "Success rate",
       "successRateValue": "{pct}% of {runs} runs",

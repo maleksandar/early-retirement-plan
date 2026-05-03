@@ -98,7 +98,7 @@
       "crossoverRangeByAge": "p10–p90 opseg: {p10}–{p90} god. starosti",
       "crossoverRangeByCalendar": "p10–p90 opseg: {p10}–{p90}. god.",
       "noCrossoverTitle": "Nema medijanskog preseka za {years} god.",
-      "noCrossoverSub": "Manje od polovine simulacija dostiže presek. Pokušaj veći doprinos ili duži horizont.",
+      "noCrossoverSub": "Medijanski scenario ne dostiže presek unutar horizonta. Pokušaj veći doprinos ili duži horizont.",
       "noCrossoverGap": "Medijanski deficit na kraju: {amount}/god.",
       "successRate": "Stopa uspeha",
       "successRateValue": "{pct}% od {runs} simulacija",
