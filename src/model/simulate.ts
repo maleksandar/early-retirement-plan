@@ -102,7 +102,8 @@ export type MCYearPoint = {
 
 export type MCResult = {
   series: MCYearPoint[]
-  medianCrossoverYear: number | null
+  p50CrossoverYear: number | null   // first year where P50 passive return >= P50 expenses (chart-aligned)
+  medianCrossoverYear: number | null // 50th percentile of individual run crossover years
   crossoverP10Year: number | null
   crossoverP90Year: number | null
   successRate: number
@@ -180,8 +181,12 @@ export function simulateMonteCarlo(input: MonteCarloInput): MCResult {
   const rankIdx = (pct: number) => Math.floor((pct / 100) * (N - 1))
   const at = (idx: number): number | null => (idx < crossoverYears.length ? crossoverYears[idx] : null)
 
+  // First year where the P50 passive return line crosses the P50 expenses line (visually consistent with chart)
+  const p50CrossoverYear = series.find((p) => p.passiveReturnP50 >= p.expensesP50)?.year ?? null
+
   return {
     series,
+    p50CrossoverYear,
     medianCrossoverYear: at(rankIdx(50)),
     crossoverP10Year: at(rankIdx(10)),
     crossoverP90Year: at(rankIdx(90)),

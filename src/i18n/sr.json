@@ -46,11 +46,11 @@
       },
       "returnStdDev": {
         "label": "Std. dev. prinosa (%)",
-        "tip": "Standardna devijacija godišnjeg prinosa — godišnja promenljivost prinosa portfolija. Vrednost 5 znači da oko dve trećine simuliranih godina pada unutar ±5% od proseka prinosa."
+        "tip": "Standardna devijacija godišnjeg prinosa — godišnja promenljivost prinosa portfolija. Vrednost 15 znači da oko dve trećine simuliranih godina pada unutar ±15% od proseka prinosa. Istorijski, globalni akcijski indeksi imaju std. devijaciju od oko 15–17%."
       },
       "inflationStdDev": {
         "label": "Std. dev. inflacije (%)",
-        "tip": "Standardna devijacija godišnje inflacije — godišnja promenljivost stope inflacije. Vrednost 1 znači da oko dve trećine simuliranih godina ima inflaciju unutar ±1% od proseka."
+        "tip": "Standardna devijacija godišnje inflacije — godišnja promenljivost stope inflacije. Vrednost 2 znači da oko dve trećine simuliranih godina ima inflaciju unutar ±2% od proseka. Istorijski, inflacija u razvijenim ekonomijama varira za oko 2–3 procentna poena godišnje."
       },
       "runButton": "Ponovi simulacije",
       "statusRunning": "Izvršavam {runs} simulacija…",

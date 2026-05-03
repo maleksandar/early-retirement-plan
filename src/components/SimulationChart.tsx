@@ -71,7 +71,7 @@ export function SimulationChart({
 
   const xAxisTitle = resolvedXMode === 'age' ? tr(lang, 'chart.labels.age') : tr(lang, 'chart.labels.year');
 
-  const activeCrossover = isMC ? mcResult.medianCrossoverYear : crossoverYear;
+  const activeCrossover = isMC ? mcResult.p50CrossoverYear : crossoverYear;
 
   return (
     <section className='panel chart-panel'>

@@ -46,11 +46,11 @@
       },
       "returnStdDev": {
         "label": "Return std. dev. (%)",
-        "tip": "Annual return standard deviation — year-to-year variability of the portfolio return. A value of 5 means roughly two-thirds of simulated years fall within ±5% of the mean return."
+        "tip": "Annual return standard deviation — year-to-year variability of the portfolio return. A value of 15 means roughly two-thirds of simulated years fall within ±15% of the mean return. Historically, global equity indices have a std. dev. of around 15–17%."
       },
       "inflationStdDev": {
         "label": "Inflation std. dev. (%)",
-        "tip": "Annual inflation standard deviation — year-to-year variability of the inflation rate. A value of 1 means roughly two-thirds of simulated years fall within ±1% of the mean inflation."
+        "tip": "Annual inflation standard deviation — year-to-year variability of the inflation rate. A value of 2 means roughly two-thirds of simulated years fall within ±2% of the mean inflation. Historically, inflation in developed economies varies by around 2–3 percentage points per year."
       },
       "runButton": "Re-run simulations",
       "statusRunning": "Running {runs} simulations…",

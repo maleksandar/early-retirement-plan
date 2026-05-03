@@ -52,20 +52,20 @@ export function OutcomePanel({
 
   // ── Monte Carlo mode ────────────────────────────────────────────────────────
   if (mcEnabled && mcResult) {
-    const { medianCrossoverYear, crossoverP10Year, crossoverP90Year, successRate, series: mcSeries } = mcResult;
+    const { p50CrossoverYear, crossoverP10Year, crossoverP90Year, successRate, series: mcSeries } = mcResult;
     const mcFinalPoint = mcSeries[mcSeries.length - 1];
     const successPct = Math.round(successRate * 100);
     const runs = Number(mcRunCount).toLocaleString();
 
     const crossoverTitle = () => {
-      if (medianCrossoverYear === null) return null;
+      if (p50CrossoverYear === null) return null;
       if (resolvedXMode === 'age' && ageYears !== null) {
-        return trParams(lang, 'result.mc.crossoverTitleByAge', { age: ageYears + medianCrossoverYear });
+        return trParams(lang, 'result.mc.crossoverTitleByAge', { age: ageYears + p50CrossoverYear });
       }
       if (resolvedXMode === 'cal') {
-        return trParams(lang, 'result.mc.crossoverTitleByCalendar', { year: CURRENT_YEAR + medianCrossoverYear });
+        return trParams(lang, 'result.mc.crossoverTitleByCalendar', { year: CURRENT_YEAR + p50CrossoverYear });
       }
-      return trParams(lang, 'result.mc.crossoverTitleRelative', { years: medianCrossoverYear });
+      return trParams(lang, 'result.mc.crossoverTitleRelative', { years: p50CrossoverYear });
     };
 
     const crossoverRange = () => {
@@ -82,15 +82,15 @@ export function OutcomePanel({
     };
 
     const mcCrossoverMcPoint =
-      medianCrossoverYear !== null ? (mcSeries.find((p) => p.year === medianCrossoverYear) ?? null) : null;
+      p50CrossoverYear !== null ? (mcSeries.find((p) => p.year === p50CrossoverYear) ?? null) : null;
 
-    const hasMedianCrossover = medianCrossoverYear !== null;
+    const hasCrossover = p50CrossoverYear !== null;
 
     return (
       <section className='panel outcome-panel'>
         <h2>{tr(lang, 'sections.result')}</h2>
 
-        {hasMedianCrossover ? (
+        {hasCrossover ? (
           <>
             <div className='outcome-headline outcome-headline--success'>
               <span className='outcome-badge outcome-badge--success'>✓</span>
