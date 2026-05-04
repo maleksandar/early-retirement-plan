@@ -1,5 +1,5 @@
 import { tr, type Lang } from './i18n';
-import { SLIDERS, type FieldKey } from './constants';
+import { SLIDERS, type FieldKey, type ExtraAsset, type ExtraAssetState, EXTRA_ASSETS } from './constants';
 
 export function parseNum(value: string): number {
   const n = Number.parseFloat(value.replace(',', '.'));
@@ -40,16 +40,27 @@ export function parseAgeYears(s: string): number | null {
 
 export type MCFieldKey = 'mcReturnStdDev' | 'mcInflationStdDev';
 
+export type AssetErrorKey =
+  | 'bonds_val' | 'bonds_ret' | 'bonds_sd' | 'bonds_con'
+  | 'realestate_val' | 'realestate_ret' | 'realestate_sd' | 'realestate_con'
+  | 'gold_val' | 'gold_ret' | 'gold_sd' | 'gold_con'
+  | 'silver_val' | 'silver_ret' | 'silver_sd' | 'silver_con'
+  | 'crypto_val' | 'crypto_ret' | 'crypto_sd' | 'crypto_con'
+  | 'stocks_con';
+
+export type AllErrors = Partial<Record<FieldKey | 'currentAge' | MCFieldKey | AssetErrorKey, string>>;
+
 export function getErrors(
   vals: Record<FieldKey, string>,
   currentAge: string,
   lang: Lang,
   mcVals?: { mcReturnStdDev: string; mcInflationStdDev: string },
   histMode?: boolean,
-): Partial<Record<FieldKey | 'currentAge' | MCFieldKey, string>> {
-  const errors: Partial<Record<FieldKey | 'currentAge' | MCFieldKey, string>> = {};
+  allocVals?: { extraAssets: Record<ExtraAsset, ExtraAssetState>; stocksCon: string; mcMode?: boolean },
+): AllErrors {
+  const errors: AllErrors = {};
 
-  function check(key: FieldKey | MCFieldKey, val: string, opts: { min?: number; max?: number; nonNeg?: boolean } = {}) {
+  function check(key: keyof AllErrors, val: string, opts: { min?: number; max?: number; nonNeg?: boolean } = {}) {
     const n = parseNum(val);
     if (val.trim() === '' || !Number.isFinite(parseFloat(val.replace(',', '.')))) {
       errors[key] = tr(lang, 'errors.notNumber');
@@ -84,6 +95,20 @@ export function getErrors(
   if (mcVals) {
     check('mcReturnStdDev', mcVals.mcReturnStdDev, { nonNeg: true, max: 20 });
     check('mcInflationStdDev', mcVals.mcInflationStdDev, { nonNeg: true, max: 10 });
+  }
+
+  if (allocVals) {
+    check('stocks_con', allocVals.stocksCon, { nonNeg: true });
+    for (const asset of EXTRA_ASSETS) {
+      const a = allocVals.extraAssets[asset];
+      if (!a.on) continue;
+      check(`${asset}_val` as AssetErrorKey, a.val, { min: 1 });
+      check(`${asset}_ret` as AssetErrorKey, a.ret, { min: 0, max: 100 });
+      check(`${asset}_con` as AssetErrorKey, a.con, { nonNeg: true });
+      if (allocVals.mcMode) {
+        check(`${asset}_sd` as AssetErrorKey, a.sd, { min: 0 });
+      }
+    }
   }
 
   return errors;

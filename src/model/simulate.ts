@@ -1,3 +1,10 @@
+export type AssetAllocation = {
+  assetClass: import('../data/historical').AssetClass
+  value: number
+  annualReturnPercent: number
+  returnStdDevPercent: number
+}
+
 export type SimulationInput = {
   initialCapital: number
   monthlyNeedToday: number
@@ -5,6 +12,7 @@ export type SimulationInput = {
   monthlyContribution: number
   annualReturnPercent: number
   horizonYears: number
+  assetAllocations?: AssetAllocation[]
 }
 
 export type YearPoint = {
@@ -71,6 +79,8 @@ export function simulate(input: SimulationInput): SimulationResult {
 export function simulateHistorical(
   input: Omit<SimulationInput, 'annualReturnPercent' | 'annualInflationPercent'>,
   rates: { returnPct: number; inflationPct: number }[],
+  assetAllocations?: AssetAllocation[],
+  assetRates?: Partial<Record<Exclude<import('../data/historical').AssetClass, 'stocks'>, { returnPct: number }[]>>,
 ): SimulationResult {
   const monthlyNeed = input.monthlyNeedToday
   const contribYearly = 12 * input.monthlyContribution
@@ -81,8 +91,24 @@ export function simulateHistorical(
   let k = input.initialCapital
   let priceLevel = 1
 
+  const totalCapital = assetAllocations?.reduce((s, a) => s + a.value, 0) ?? k
+
   for (let y = 0; y <= effectiveH; y++) {
-    const r = rates[y].returnPct / 100
+    let returnPct: number
+    if (assetAllocations && assetRates && totalCapital > 0) {
+      returnPct = assetAllocations.reduce((sum, a) => {
+        const weight = a.value / totalCapital
+        if (a.assetClass === 'stocks') {
+          return sum + weight * rates[y].returnPct
+        }
+        const ar = assetRates[a.assetClass as Exclude<import('../data/historical').AssetClass, 'stocks'>]
+        return sum + weight * (ar?.[y]?.returnPct ?? a.annualReturnPercent)
+      }, 0)
+    } else {
+      returnPct = rates[y].returnPct
+    }
+
+    const r = returnPct / 100
     const annualExpenses = 12 * monthlyNeed * priceLevel
     const passiveReturn = k * r
 
@@ -163,6 +189,8 @@ export function simulateMonteCarlo(input: MonteCarloInput): MCResult {
   const returnStd = input.returnStdDevPercent / 100
   const inflationStd = input.inflationStdDevPercent / 100
   const contribYearly = 12 * input.monthlyContribution
+  const allocs = input.assetAllocations
+  const totalCapital = allocs ? allocs.reduce((s, a) => s + a.value, 0) : input.initialCapital
 
   for (let run = 0; run < N; run++) {
     let k = input.initialCapital
@@ -170,7 +198,16 @@ export function simulateMonteCarlo(input: MonteCarloInput): MCResult {
     let crossover: number | null = null
 
     for (let y = 0; y <= H; y++) {
-      const r = Math.max(0, baseR + (returnStd > 0 ? boxMuller() * returnStd : 0))
+      let r: number
+      if (allocs && totalCapital > 0) {
+        r = allocs.reduce((sum, a) => {
+          const weight = a.value / totalCapital
+          const draw = a.annualReturnPercent / 100 + (a.returnStdDevPercent > 0 ? boxMuller() * a.returnStdDevPercent / 100 : 0)
+          return sum + weight * Math.max(0, draw)
+        }, 0)
+      } else {
+        r = Math.max(0, baseR + (returnStd > 0 ? boxMuller() * returnStd : 0))
+      }
       const pi = basePi + (inflationStd > 0 ? boxMuller() * inflationStd : 0)
 
       const annualExpenses = 12 * input.monthlyNeedToday * priceLevel

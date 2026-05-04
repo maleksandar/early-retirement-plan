@@ -52,6 +52,24 @@
       "disabledInflationTip": "Not used in historical mode — actual US CPI annual inflation data replaces this fixed rate.",
       "disabledReturnTip": "Not used in historical mode — actual S&P 500 annual returns replace this fixed rate."
     },
+    "assetAllocation": {
+      "sectionTitle": "Asset Allocation",
+      "stocksLabel": "Stocks / ETFs",
+      "bondsLabel": "Bonds",
+      "realestateLabel": "Real Estate",
+      "goldLabel": "Gold",
+      "silverLabel": "Silver",
+      "cryptoLabel": "Crypto",
+      "valueLabel": "Value ($)",
+      "returnLabel": "Annual Return (%)",
+      "stdDevLabel": "Std Dev (%)",
+      "cryptoYearClamp": "Start year clamped to {year} — earliest available crypto data.",
+      "contributionLabel": "Monthly Contribution ($)",
+      "totalLabel": "Total",
+      "totalContributionLabel": "Total monthly contribution",
+      "blendedReturnLabel": "Blended return",
+      "blendedStdDevLabel": "Blended std dev"
+    },
     "mc": {
       "toggleLabel": "Monte Carlo mode",
       "toggleTip": "Runs many randomised scenarios to show a range of outcomes based on return and inflation volatility. The annual return and inflation are sampled from a normal distribution each year.",

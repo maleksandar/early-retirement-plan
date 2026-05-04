@@ -53,6 +53,20 @@ export const QP = {
   mcis: 'mcis',
   sm: 'sm',
   hy: 'hy',
+  // bonds
+  bonOn: 'bon', bonVal: 'bov', bonRet: 'bor', bonSd: 'bod', bonCon: 'boc',
+  // realestate
+  reOn: 'reon', reVal: 'reov', reRet: 'reor', reSd: 'reod', reCon: 'rec',
+  // gold
+  goOn: 'gln', goVal: 'glv', goRet: 'glr', goSd: 'gld', goCon: 'glc',
+  // silver
+  siOn: 'svn', siVal: 'svv', siRet: 'svr', siSd: 'svd', siCon: 'svc',
+  // crypto
+  crOn: 'crn', crVal: 'crv', crRet: 'crr', crSd: 'crd', crCon: 'crc',
+  // stocks value and contribution in multi-asset mode
+  stV: 'stv', stCon: 'stc', stOn: 'sto',
+  // allocation display order
+  aOrd: 'aord',
 } as const;
 
 export const MC_DEFAULTS = {
@@ -63,3 +77,33 @@ export const MC_DEFAULTS = {
 };
 
 export const MC_RUN_COUNTS = ['500', '1000', '5000', '10000'] as const;
+
+export const EXTRA_ASSETS = ['bonds', 'realestate', 'gold', 'silver', 'crypto'] as const;
+export type ExtraAsset = (typeof EXTRA_ASSETS)[number];
+
+export type ExtraAssetState = {
+  on: boolean;
+  val: string;
+  ret: string;
+  sd: string;
+  con: string;
+};
+
+export const EXTRA_ASSET_DEFAULTS: Record<ExtraAsset, ExtraAssetState> = {
+  bonds:      { on: false, val: '5000',  ret: '4',  sd: '5',  con: '0' },
+  realestate: { on: false, val: '5000',  ret: '6',  sd: '8',  con: '0' },
+  gold:       { on: false, val: '2000',  ret: '5',  sd: '15', con: '0' },
+  silver:     { on: false, val: '1000',  ret: '5',  sd: '25', con: '0' },
+  crypto:     { on: false, val: '1000',  ret: '20', sd: '80', con: '0' },
+};
+
+export const ASSET_COLORS: Record<import('./data/historical').AssetClass, string> = {
+  stocks:     '#4e8ef7',
+  bonds:      '#4caf7d',
+  realestate: '#f0963a',
+  gold:       '#f5c518',
+  silver:     '#a0aec0',
+  crypto:     '#a78bfa',
+};
+
+export const DEFAULT_ALLOC_ORDER = ['stocks', 'bonds', 'realestate', 'gold', 'silver', 'crypto'];
