@@ -111,10 +111,8 @@ export function readUrlState(): {
 
 export function buildSearchParams(state: {
   lang: Lang;
-  initialCapital: string;
   monthlyNeedToday: string;
   annualInflationPercent: string;
-  monthlyContribution: string;
   annualReturnPercent: string;
   horizonYears: string;
   currentAge: string;
@@ -131,10 +129,8 @@ export function buildSearchParams(state: {
 }): string {
   const sp = new URLSearchParams();
   sp.set(QP.l, state.lang);
-  sp.set(QP.ic, state.initialCapital);
   sp.set(QP.mn, state.monthlyNeedToday);
   sp.set(QP.inf, state.annualInflationPercent);
-  sp.set(QP.mc, state.monthlyContribution);
   sp.set(QP.ar, state.annualReturnPercent);
   sp.set(QP.h, state.horizonYears);
   if (state.currentAge.trim() !== '') sp.set(QP.a, state.currentAge);
@@ -149,25 +145,22 @@ export function buildSearchParams(state: {
     sp.set(QP.hy, String(state.histStartYear));
   }
 
-  const anyOn = EXTRA_ASSETS.some((a) => state.extraAssets[a].on);
-  if (anyOn) {
-    sp.set(QP.stV, state.stocksVal);
-    sp.set(QP.stCon, state.stocksCon);
-    for (const asset of EXTRA_ASSETS) {
-      const a = state.extraAssets[asset];
-      const keys = ASSET_QP[asset];
-      sp.set(keys.on, a.on ? '1' : '0');
-      if (a.on) {
-        sp.set(keys.val, a.val);
-        sp.set(keys.ret, a.ret);
-        sp.set(keys.sd, a.sd);
-        sp.set(keys.con, a.con);
-      }
+  sp.set(QP.stV, state.stocksVal);
+  sp.set(QP.stCon, state.stocksCon);
+  for (const asset of EXTRA_ASSETS) {
+    const a = state.extraAssets[asset];
+    const keys = ASSET_QP[asset];
+    sp.set(keys.on, a.on ? '1' : '0');
+    if (a.on) {
+      sp.set(keys.val, a.val);
+      sp.set(keys.ret, a.ret);
+      sp.set(keys.sd, a.sd);
+      sp.set(keys.con, a.con);
     }
-    const order = state.allocOrder.join(',');
-    if (order !== DEFAULT_ALLOC_ORDER.join(',')) {
-      sp.set(QP.aOrd, order);
-    }
+  }
+  const order = state.allocOrder.join(',');
+  if (order !== DEFAULT_ALLOC_ORDER.join(',')) {
+    sp.set(QP.aOrd, order);
   }
 
   return sp.toString();

@@ -36,12 +36,8 @@ const ASSET_LABEL_KEYS: Record<ExtraAsset, string> = {
 interface InputFormProps {
   lang: Lang;
   errors: AllErrors;
-  initialCapital: string;
-  setInitialCapital: (v: string) => void;
   monthlyNeedToday: string;
   setMonthlyNeedToday: (v: string) => void;
-  monthlyContribution: string;
-  setMonthlyContribution: (v: string) => void;
   annualInflationPercent: string;
   setAnnualInflationPercent: (v: string) => void;
   annualReturnPercent: string;
@@ -65,8 +61,6 @@ interface InputFormProps {
   setMcInflationStdDev: (v: string) => void;
   mcStatus: MCStatus;
   onRerunMC: () => void;
-  // multi-asset
-  multiAssetMode: boolean;
   blendedCapital: number;
   blendedContribution: number;
   blendedReturnNum: number;
@@ -227,12 +221,8 @@ function AllocationBar({ segments, onDragRebalance, onMoveLeft, onMoveRight }: A
 export function InputForm({
   lang,
   errors,
-  initialCapital,
-  setInitialCapital,
   monthlyNeedToday,
   setMonthlyNeedToday,
-  monthlyContribution,
-  setMonthlyContribution,
   annualInflationPercent,
   setAnnualInflationPercent,
   annualReturnPercent,
@@ -256,7 +246,6 @@ export function InputForm({
   setMcInflationStdDev,
   mcStatus,
   onRerunMC,
-  multiAssetMode,
   blendedCapital,
   blendedContribution,
   blendedReturnNum,
@@ -277,20 +266,14 @@ export function InputForm({
   const histMode = simMode === 'hist';
   const mcMode = simMode === 'mc';
 
-  // Build allocation bar segments
   const activeAssetKeys = allocOrder.filter(
     (k) => k === 'stocks' || (EXTRA_ASSETS as readonly string[]).includes(k) && extraAssets[k as ExtraAsset].on,
   );
 
-  const totalAllocVal = multiAssetMode
-    ? parseNum(stocksVal) + EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce((s, a) => s + parseNum(extraAssets[a].val), 0)
-    : 0;
+  const totalAllocVal = parseNum(stocksVal) + EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce((s, a) => s + parseNum(extraAssets[a].val), 0);
+  const totalAllocCon = parseNum(stocksCon) + EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce((s, a) => s + parseNum(extraAssets[a].con), 0);
 
-  const totalAllocCon = multiAssetMode
-    ? parseNum(stocksCon) + EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce((s, a) => s + parseNum(extraAssets[a].con), 0)
-    : 0;
-
-  const barSegments: BarSegment[] = multiAssetMode && activeAssetKeys.length >= 2
+  const barSegments: BarSegment[] = activeAssetKeys.length >= 2
     ? activeAssetKeys.map((k) => {
         const val = k === 'stocks' ? parseNum(stocksVal) : parseNum(extraAssets[k as ExtraAsset].val);
         const pct = totalAllocVal > 0 ? (val / totalAllocVal) * 100 : 0;
@@ -299,7 +282,7 @@ export function InputForm({
       })
     : [];
 
-  const conBarSegments: BarSegment[] = multiAssetMode && activeAssetKeys.length >= 2 && totalAllocCon > 0
+  const conBarSegments: BarSegment[] = activeAssetKeys.length >= 2 && totalAllocCon > 0
     ? activeAssetKeys.map((k) => {
         const val = k === 'stocks' ? parseNum(stocksCon) : parseNum(extraAssets[k as ExtraAsset].con);
         const pct = totalAllocCon > 0 ? (val / totalAllocCon) * 100 : 0;
@@ -374,27 +357,6 @@ export function InputForm({
     <section className='panel form-panel'>
       <h2>{tr(lang, 'sections.params')}</h2>
       <div className='form-grid'>
-        <div className={`field${multiAssetMode ? ' field--readonly' : ''}`}>
-          <label className='field-label' htmlFor='initialCapital'>
-            <span className='field-label-head'>
-              <span className='field-label-text'>{tr(lang, 'form.initialCapital.label')}</span>
-              <FieldTooltip text={tr(lang, 'form.initialCapital.tip')} />
-            </span>
-          </label>
-          <div className='field-control'>
-            <input
-              id='initialCapital'
-              type='text'
-              inputMode='decimal'
-              value={multiAssetMode ? String(Math.round(blendedCapital)) : initialCapital}
-              onChange={(e) => !multiAssetMode && setInitialCapital(e.target.value)}
-              readOnly={multiAssetMode}
-              className={!multiAssetMode && errors.initialCapital ? 'input-error' : ''}
-            />
-            {!multiAssetMode && errors.initialCapital && <span className='field-error'>{errors.initialCapital}</span>}
-          </div>
-        </div>
-
         <div className='field'>
           <label className='field-label' htmlFor='monthlyNeedToday'>
             <span className='field-label-head'>
@@ -420,37 +382,6 @@ export function InputForm({
               onChange={(e) => setMonthlyNeedToday(e.target.value)}
             />
             {errors.monthlyNeedToday && <span className='field-error'>{errors.monthlyNeedToday}</span>}
-          </div>
-        </div>
-
-        <div className={`field${multiAssetMode ? ' field--readonly' : ''}`}>
-          <label className='field-label' htmlFor='monthlyContribution'>
-            <span className='field-label-head'>
-              <span className='field-label-text'>{tr(lang, 'form.monthlyContribution.label')}</span>
-              <FieldTooltip text={tr(lang, 'form.monthlyContribution.tip')} />
-            </span>
-          </label>
-          <div className='field-control'>
-            <input
-              id='monthlyContribution'
-              type='text'
-              inputMode='decimal'
-              value={multiAssetMode ? String(Math.round(blendedContribution)) : monthlyContribution}
-              onChange={(e) => !multiAssetMode && setMonthlyContribution(e.target.value)}
-              readOnly={multiAssetMode}
-              className={!multiAssetMode && errors.monthlyContribution ? 'input-error' : ''}
-            />
-            {!multiAssetMode && (
-              <input
-                type='range'
-                min={SLIDERS.monthlyContribution.min}
-                max={SLIDERS.monthlyContribution.max}
-                step={SLIDERS.monthlyContribution.step}
-                value={sliderVal(monthlyContribution, SLIDERS.monthlyContribution)}
-                onChange={(e) => setMonthlyContribution(e.target.value)}
-              />
-            )}
-            {!multiAssetMode && errors.monthlyContribution && <span className='field-error'>{errors.monthlyContribution}</span>}
           </div>
         </div>
 
@@ -484,43 +415,6 @@ export function InputForm({
             />
             {!histMode && errors.annualInflationPercent && (
               <span className='field-error'>{errors.annualInflationPercent}</span>
-            )}
-          </div>
-        </div>
-
-        <div className={`field${histMode || multiAssetMode ? ' field--disabled' : ''}`}>
-          <label className='field-label' htmlFor='annualReturnPercent'>
-            <span className='field-label-head'>
-              <span className='field-label-text'>{tr(lang, 'form.return.label')}</span>
-              <FieldTooltip
-                text={histMode ? tr(lang, 'form.hist.disabledReturnTip') : tr(lang, 'form.return.tip')}
-              />
-            </span>
-          </label>
-          <div className='field-control'>
-            <input
-              id='annualReturnPercent'
-              type='text'
-              inputMode='decimal'
-              value={multiAssetMode ? blendedReturnNum.toFixed(2) : annualReturnPercent}
-              onChange={(e) => !multiAssetMode && !histMode && setAnnualReturnPercent(e.target.value)}
-              disabled={histMode}
-              readOnly={multiAssetMode}
-              className={!histMode && !multiAssetMode && errors.annualReturnPercent ? 'input-error' : ''}
-            />
-            {!multiAssetMode && (
-              <input
-                type='range'
-                min={SLIDERS.annualReturnPercent.min}
-                max={SLIDERS.annualReturnPercent.max}
-                step={SLIDERS.annualReturnPercent.step}
-                value={sliderVal(annualReturnPercent, SLIDERS.annualReturnPercent)}
-                onChange={(e) => setAnnualReturnPercent(e.target.value)}
-                disabled={histMode}
-              />
-            )}
-            {!histMode && !multiAssetMode && errors.annualReturnPercent && (
-              <span className='field-error'>{errors.annualReturnPercent}</span>
             )}
           </div>
         </div>
@@ -576,20 +470,14 @@ export function InputForm({
       </div>
 
       {/* ── Asset Allocation Section ── */}
-      <details className='alloc-section'>
-        <summary className='alloc-section-summary'>
+      <div className='alloc-section'>
+        <div className='alloc-section-summary'>
           {tr(lang, 'form.assetAllocation.sectionTitle')}
-          {multiAssetMode && (
-            <span className='alloc-section-badge'>
-              {EXTRA_ASSETS.filter((a) => extraAssets[a].on).length + 1}
-            </span>
-          )}
-        </summary>
+        </div>
 
         <div className='alloc-body'>
-          {/* Stocks value row (shown when multi-asset) */}
-          {multiAssetMode && (
-            <div className='alloc-asset-row alloc-asset-row--stocks'>
+          {/* Stocks row — always shown */}
+          <div className='alloc-asset-row alloc-asset-row--stocks alloc-asset-row--on'>
               <div className='alloc-asset-header'>
                 <span className='alloc-asset-swatch' style={{ background: ASSET_COLORS.stocks }} />
                 <span className='alloc-asset-name'>{tr(lang, 'form.assetAllocation.stocksLabel')}</span>
@@ -672,7 +560,6 @@ export function InputForm({
                 )}
               </div>
             </div>
-          )}
 
           {/* Extra asset toggles */}
           {EXTRA_ASSETS.map((asset) => {
@@ -801,17 +688,15 @@ export function InputForm({
             </p>
           )}
 
-          {/* Blended summary */}
-          {multiAssetMode && (
-            <div className='alloc-summary'>
-              <span>{tr(lang, 'form.assetAllocation.totalLabel')}: <strong>${Math.round(blendedCapital).toLocaleString()}</strong></span>
-              <span>{tr(lang, 'form.assetAllocation.totalContributionLabel')}: <strong>${Math.round(blendedContribution).toLocaleString()}/mo</strong></span>
-              <span>{tr(lang, 'form.assetAllocation.blendedReturnLabel')}: <strong>{blendedReturnNum.toFixed(2)}%</strong></span>
-              {mcMode && (
-                <span>{tr(lang, 'form.assetAllocation.blendedStdDevLabel')}: <strong>{blendedStdDevNum.toFixed(2)}%</strong></span>
-              )}
-            </div>
-          )}
+          {/* Blended summary — always visible */}
+          <div className='alloc-summary'>
+            <span>{tr(lang, 'form.assetAllocation.totalLabel')}: <strong>${Math.round(blendedCapital).toLocaleString()}</strong></span>
+            <span>{tr(lang, 'form.assetAllocation.totalContributionLabel')}: <strong>${Math.round(blendedContribution).toLocaleString()}/mo</strong></span>
+            <span>{tr(lang, 'form.assetAllocation.blendedReturnLabel')}: <strong>{blendedReturnNum.toFixed(2)}%</strong></span>
+            {mcMode && (
+              <span>{tr(lang, 'form.assetAllocation.blendedStdDevLabel')}: <strong>{blendedStdDevNum.toFixed(2)}%</strong></span>
+            )}
+          </div>
 
           {/* Capital allocation bar */}
           {barSegments.length >= 2 && (
@@ -839,7 +724,7 @@ export function InputForm({
             </div>
           )}
         </div>
-      </details>
+      </div>
 
       <div className='sim-mode-section'>
         <span className='sim-mode-label'>{tr(lang, 'form.simMode.label')}</span>
@@ -936,37 +821,6 @@ export function InputForm({
                     </option>
                   ))}
                 </select>
-              </div>
-            </div>
-
-            <div className={`field${multiAssetMode ? ' field--readonly' : ''}`}>
-              <label className='field-label' htmlFor='mcReturnStdDev'>
-                <span className='field-label-head'>
-                  <span className='field-label-text'>{tr(lang, 'form.mc.returnStdDev.label')}</span>
-                  <FieldTooltip text={tr(lang, 'form.mc.returnStdDev.tip')} />
-                </span>
-              </label>
-              <div className='field-control'>
-                <input
-                  id='mcReturnStdDev'
-                  type='text'
-                  inputMode='decimal'
-                  value={multiAssetMode ? blendedStdDevNum.toFixed(2) : mcReturnStdDev}
-                  onChange={(e) => !multiAssetMode && setMcReturnStdDev(e.target.value)}
-                  readOnly={multiAssetMode}
-                  className={!multiAssetMode && errors.mcReturnStdDev ? 'input-error' : ''}
-                />
-                {!multiAssetMode && (
-                  <input
-                    type='range'
-                    min={MC_SLIDERS.mcReturnStdDev.min}
-                    max={MC_SLIDERS.mcReturnStdDev.max}
-                    step={MC_SLIDERS.mcReturnStdDev.step}
-                    value={clamp(parseNum(mcReturnStdDev), MC_SLIDERS.mcReturnStdDev.min, MC_SLIDERS.mcReturnStdDev.max)}
-                    onChange={(e) => setMcReturnStdDev(e.target.value)}
-                  />
-                )}
-                {!multiAssetMode && errors.mcReturnStdDev && <span className='field-error'>{errors.mcReturnStdDev}</span>}
               </div>
             </div>
 

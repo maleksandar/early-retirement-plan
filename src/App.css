@@ -898,23 +898,11 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.65rem 1rem;
-  cursor: pointer;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text);
-  user-select: none;
-  list-style: none;
+  border-bottom: 1px solid var(--border);
 }
-
-.alloc-section-summary::-webkit-details-marker { display: none; }
-.alloc-section-summary::before {
-  content: '▶';
-  font-size: 0.65rem;
-  transition: transform 0.15s;
-  color: var(--text);
-  opacity: 0.5;
-}
-details[open] .alloc-section-summary::before { transform: rotate(90deg); }
 
 .alloc-section-badge {
   display: inline-flex;
