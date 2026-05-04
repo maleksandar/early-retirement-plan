@@ -12,12 +12,12 @@ import {
   DEFAULT_ALLOC_ORDER,
 } from './constants';
 
-const ASSET_QP: Record<ExtraAsset, { on: string; val: string; ret: string; sd: string }> = {
-  bonds:      { on: QP.bonOn, val: QP.bonVal, ret: QP.bonRet, sd: QP.bonSd },
-  realestate: { on: QP.reOn,  val: QP.reVal,  ret: QP.reRet,  sd: QP.reSd  },
-  gold:       { on: QP.goOn,  val: QP.goVal,  ret: QP.goRet,  sd: QP.goSd  },
-  silver:     { on: QP.siOn,  val: QP.siVal,  ret: QP.siRet,  sd: QP.siSd  },
-  crypto:     { on: QP.crOn,  val: QP.crVal,  ret: QP.crRet,  sd: QP.crSd  },
+const ASSET_QP: Record<ExtraAsset, { on: string; val: string; ret: string; sd: string; con: string }> = {
+  bonds:      { on: QP.bonOn, val: QP.bonVal, ret: QP.bonRet, sd: QP.bonSd, con: QP.bonCon },
+  realestate: { on: QP.reOn,  val: QP.reVal,  ret: QP.reRet,  sd: QP.reSd,  con: QP.reCon  },
+  gold:       { on: QP.goOn,  val: QP.goVal,  ret: QP.goRet,  sd: QP.goSd,  con: QP.goCon  },
+  silver:     { on: QP.siOn,  val: QP.siVal,  ret: QP.siRet,  sd: QP.siSd,  con: QP.siCon  },
+  crypto:     { on: QP.crOn,  val: QP.crVal,  ret: QP.crRet,  sd: QP.crSd,  con: QP.crCon  },
 };
 
 export function readUrlState(): {
@@ -36,6 +36,7 @@ export function readUrlState(): {
   mcInflationStdDev?: string;
   histStartYear?: number;
   stocksVal?: string;
+  stocksCon?: string;
   extraAssets?: Record<ExtraAsset, ExtraAssetState>;
   allocOrder?: string[];
 } {
@@ -69,8 +70,15 @@ export function readUrlState(): {
   }
 
   if (g(QP.stV) != null && g(QP.stV) !== '') o.stocksVal = g(QP.stV)!;
+  if (g(QP.stCon) != null && g(QP.stCon) !== '') o.stocksCon = g(QP.stCon)!;
 
-  const extraAssets: Record<ExtraAsset, ExtraAssetState> = { ...EXTRA_ASSET_DEFAULTS };
+  const extraAssets: Record<ExtraAsset, ExtraAssetState> = {
+    bonds:      { ...EXTRA_ASSET_DEFAULTS.bonds      },
+    realestate: { ...EXTRA_ASSET_DEFAULTS.realestate },
+    gold:       { ...EXTRA_ASSET_DEFAULTS.gold       },
+    silver:     { ...EXTRA_ASSET_DEFAULTS.silver     },
+    crypto:     { ...EXTRA_ASSET_DEFAULTS.crypto     },
+  };
   let anyAssetInUrl = false;
   for (const asset of EXTRA_ASSETS) {
     const keys = ASSET_QP[asset];
@@ -78,13 +86,15 @@ export function readUrlState(): {
     const val = g(keys.val);
     const ret = g(keys.ret);
     const sd = g(keys.sd);
-    if (on != null || val != null || ret != null || sd != null) {
+    const con = g(keys.con);
+    if (on != null || val != null || ret != null || sd != null || con != null) {
       anyAssetInUrl = true;
       extraAssets[asset] = {
         on: on === '1',
         val: val ?? EXTRA_ASSET_DEFAULTS[asset].val,
         ret: ret ?? EXTRA_ASSET_DEFAULTS[asset].ret,
-        sd: sd ?? EXTRA_ASSET_DEFAULTS[asset].sd,
+        sd:  sd  ?? EXTRA_ASSET_DEFAULTS[asset].sd,
+        con: con ?? EXTRA_ASSET_DEFAULTS[asset].con,
       };
     }
   }
@@ -115,6 +125,7 @@ export function buildSearchParams(state: {
   mcInflationStdDev: string;
   histStartYear: number;
   stocksVal: string;
+  stocksCon: string;
   extraAssets: Record<ExtraAsset, ExtraAssetState>;
   allocOrder: string[];
 }): string {
@@ -141,6 +152,7 @@ export function buildSearchParams(state: {
   const anyOn = EXTRA_ASSETS.some((a) => state.extraAssets[a].on);
   if (anyOn) {
     sp.set(QP.stV, state.stocksVal);
+    sp.set(QP.stCon, state.stocksCon);
     for (const asset of EXTRA_ASSETS) {
       const a = state.extraAssets[asset];
       const keys = ASSET_QP[asset];
@@ -149,6 +161,7 @@ export function buildSearchParams(state: {
         sp.set(keys.val, a.val);
         sp.set(keys.ret, a.ret);
         sp.set(keys.sd, a.sd);
+        sp.set(keys.con, a.con);
       }
     }
     const order = state.allocOrder.join(',');

@@ -64,7 +64,9 @@
       "returnLabel": "Annual Return (%)",
       "stdDevLabel": "Std Dev (%)",
       "cryptoYearClamp": "Start year clamped to {year} — earliest available crypto data.",
+      "contributionLabel": "Monthly Contribution ($)",
       "totalLabel": "Total",
+      "totalContributionLabel": "Total monthly contribution",
       "blendedReturnLabel": "Blended return",
       "blendedStdDevLabel": "Blended std dev"
     },

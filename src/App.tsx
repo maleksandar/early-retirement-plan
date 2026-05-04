@@ -83,6 +83,9 @@ export default function App() {
   const [stocksVal, setStocksVal] = useState<string>(
     () => urlInit.stocksVal ?? String(DEFAULTS.initialCapital),
   );
+  const [stocksCon, setStocksCon] = useState<string>(
+    () => urlInit.stocksCon ?? String(DEFAULTS.monthlyContribution),
+  );
   const [allocOrder, setAllocOrder] = useState<string[]>(
     () => urlInit.allocOrder ?? [...DEFAULT_ALLOC_ORDER],
   );
@@ -191,8 +194,18 @@ export default function App() {
     return w;
   }, [multiAssetMode, blendedCapital, stocksVal, mcReturnStdDev, extraAssets]);
 
+  // Blended monthly contribution from all active assets
+  const blendedContribution = useMemo(() => {
+    if (!multiAssetMode) return parseNum(monthlyContribution);
+    return EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce(
+      (s, a) => s + parseNum(extraAssets[a].con),
+      parseNum(stocksCon),
+    );
+  }, [multiAssetMode, monthlyContribution, stocksCon, extraAssets]);
+
   const effectiveCapital = multiAssetMode ? blendedCapital : parseNum(initialCapital);
   const effectiveReturn = multiAssetMode ? blendedReturnNum : parseNum(annualReturnPercent);
+  const effectiveContribution = multiAssetMode ? blendedContribution : parseNum(monthlyContribution);
 
   // Asset allocations array for MC & hist modes
   const assetAllocations = useMemo((): AssetAllocation[] | undefined => {
@@ -248,6 +261,7 @@ export default function App() {
       mcInflationStdDev,
       histStartYear,
       stocksVal,
+      stocksCon,
       extraAssets,
       allocOrder,
     });
@@ -269,6 +283,7 @@ export default function App() {
     mcInflationStdDev,
     histStartYear,
     stocksVal,
+    stocksCon,
     extraAssets,
     allocOrder,
   ]);
@@ -279,7 +294,7 @@ export default function App() {
         {
           initialCapital: multiAssetMode ? String(blendedCapital) : initialCapital,
           monthlyNeedToday,
-          monthlyContribution,
+          monthlyContribution: multiAssetMode ? String(blendedContribution) : monthlyContribution,
           annualInflationPercent,
           annualReturnPercent: multiAssetMode ? String(blendedReturnNum) : annualReturnPercent,
           horizonYears,
@@ -288,11 +303,12 @@ export default function App() {
         lang,
         simMode === 'mc' ? { mcReturnStdDev, mcInflationStdDev } : undefined,
         simMode === 'hist',
-        multiAssetMode ? { extraAssets, mcMode: simMode === 'mc' } : undefined,
+        multiAssetMode ? { extraAssets, stocksCon, mcMode: simMode === 'mc' } : undefined,
       ),
     [
       multiAssetMode,
       blendedCapital,
+      blendedContribution,
       blendedReturnNum,
       initialCapital,
       monthlyNeedToday,
@@ -306,6 +322,7 @@ export default function App() {
       mcReturnStdDev,
       mcInflationStdDev,
       extraAssets,
+      stocksCon,
     ],
   );
 
@@ -313,7 +330,7 @@ export default function App() {
     const baseInput = {
       initialCapital: effectiveCapital,
       monthlyNeedToday: parseNum(monthlyNeedToday),
-      monthlyContribution: parseNum(monthlyContribution),
+      monthlyContribution: effectiveContribution,
       horizonYears: parseNum(horizonYears),
     };
     if (baseInput.horizonYears < 1) {
@@ -380,9 +397,9 @@ export default function App() {
     histStartYear,
     effectiveCapital,
     effectiveReturn,
+    effectiveContribution,
     monthlyNeedToday,
     annualInflationPercent,
-    monthlyContribution,
     horizonYears,
     multiAssetMode,
     assetAllocations,
@@ -398,7 +415,7 @@ export default function App() {
       initialCapital: effectiveCapital,
       monthlyNeedToday: parseNum(monthlyNeedToday),
       annualInflationPercent: parseNum(annualInflationPercent),
-      monthlyContribution: parseNum(monthlyContribution),
+      monthlyContribution: effectiveContribution,
       annualReturnPercent: effectiveReturn,
       horizonYears: parseNum(horizonYears),
       returnStdDevPercent: multiAssetMode ? blendedStdDevNum : parseNum(mcReturnStdDev),
@@ -413,9 +430,9 @@ export default function App() {
     errors.mcInflationStdDev,
     effectiveCapital,
     effectiveReturn,
+    effectiveContribution,
     monthlyNeedToday,
     annualInflationPercent,
-    monthlyContribution,
     horizonYears,
     mcReturnStdDev,
     mcInflationStdDev,
@@ -514,6 +531,7 @@ export default function App() {
       const anyOtherOn = EXTRA_ASSETS.filter((a) => a !== asset).some((a) => extraAssets[a].on);
       if (!anyOtherOn) {
         setStocksVal(initialCapital);
+        setStocksCon(monthlyContribution);
       }
     }
     setCryptoClampNotice(false);
@@ -589,11 +607,14 @@ export default function App() {
         onRerunMC={handleRerunMC}
         multiAssetMode={multiAssetMode}
         blendedCapital={blendedCapital}
+        blendedContribution={blendedContribution}
         blendedReturnNum={blendedReturnNum}
         blendedStdDevNum={blendedStdDevNum}
         extraAssets={extraAssets}
         stocksVal={stocksVal}
         setStocksVal={setStocksVal}
+        stocksCon={stocksCon}
+        setStocksCon={setStocksCon}
         allocOrder={allocOrder}
         setAllocOrder={setAllocOrder}
         onToggleAsset={handleToggleAsset}

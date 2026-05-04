@@ -64,7 +64,9 @@
       "returnLabel": "Godišnji prinos (%)",
       "stdDevLabel": "Std. dev. (%)",
       "cryptoYearClamp": "Početna godina ograničena na {year} — najstariji dostupni kripto podaci.",
+      "contributionLabel": "Mesečni doprinos ($)",
       "totalLabel": "Ukupno",
+      "totalContributionLabel": "Ukupni mesečni doprinos",
       "blendedReturnLabel": "Mešoviti prinos",
       "blendedStdDevLabel": "Mešovita std. dev."
     },

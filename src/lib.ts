@@ -41,11 +41,12 @@ export function parseAgeYears(s: string): number | null {
 export type MCFieldKey = 'mcReturnStdDev' | 'mcInflationStdDev';
 
 export type AssetErrorKey =
-  | 'bonds_val' | 'bonds_ret' | 'bonds_sd'
-  | 'realestate_val' | 'realestate_ret' | 'realestate_sd'
-  | 'gold_val' | 'gold_ret' | 'gold_sd'
-  | 'silver_val' | 'silver_ret' | 'silver_sd'
-  | 'crypto_val' | 'crypto_ret' | 'crypto_sd';
+  | 'bonds_val' | 'bonds_ret' | 'bonds_sd' | 'bonds_con'
+  | 'realestate_val' | 'realestate_ret' | 'realestate_sd' | 'realestate_con'
+  | 'gold_val' | 'gold_ret' | 'gold_sd' | 'gold_con'
+  | 'silver_val' | 'silver_ret' | 'silver_sd' | 'silver_con'
+  | 'crypto_val' | 'crypto_ret' | 'crypto_sd' | 'crypto_con'
+  | 'stocks_con';
 
 export type AllErrors = Partial<Record<FieldKey | 'currentAge' | MCFieldKey | AssetErrorKey, string>>;
 
@@ -55,7 +56,7 @@ export function getErrors(
   lang: Lang,
   mcVals?: { mcReturnStdDev: string; mcInflationStdDev: string },
   histMode?: boolean,
-  allocVals?: { extraAssets: Record<ExtraAsset, ExtraAssetState>; mcMode?: boolean },
+  allocVals?: { extraAssets: Record<ExtraAsset, ExtraAssetState>; stocksCon: string; mcMode?: boolean },
 ): AllErrors {
   const errors: AllErrors = {};
 
@@ -97,11 +98,13 @@ export function getErrors(
   }
 
   if (allocVals) {
+    check('stocks_con', allocVals.stocksCon, { nonNeg: true });
     for (const asset of EXTRA_ASSETS) {
       const a = allocVals.extraAssets[asset];
       if (!a.on) continue;
       check(`${asset}_val` as AssetErrorKey, a.val, { min: 1 });
       check(`${asset}_ret` as AssetErrorKey, a.ret, { min: 0, max: 100 });
+      check(`${asset}_con` as AssetErrorKey, a.con, { nonNeg: true });
       if (allocVals.mcMode) {
         check(`${asset}_sd` as AssetErrorKey, a.sd, { min: 0 });
       }

@@ -54,17 +54,17 @@ export const QP = {
   sm: 'sm',
   hy: 'hy',
   // bonds
-  bonOn: 'bon', bonVal: 'bov', bonRet: 'bor', bonSd: 'bod',
+  bonOn: 'bon', bonVal: 'bov', bonRet: 'bor', bonSd: 'bod', bonCon: 'boc',
   // realestate
-  reOn: 'reon', reVal: 'reov', reRet: 'reor', reSd: 'reod',
+  reOn: 'reon', reVal: 'reov', reRet: 'reor', reSd: 'reod', reCon: 'rec',
   // gold
-  goOn: 'gln', goVal: 'glv', goRet: 'glr', goSd: 'gld',
+  goOn: 'gln', goVal: 'glv', goRet: 'glr', goSd: 'gld', goCon: 'glc',
   // silver
-  siOn: 'svn', siVal: 'svv', siRet: 'svr', siSd: 'svd',
+  siOn: 'svn', siVal: 'svv', siRet: 'svr', siSd: 'svd', siCon: 'svc',
   // crypto
-  crOn: 'crn', crVal: 'crv', crRet: 'crr', crSd: 'crd',
-  // stocks value in multi-asset mode
-  stV: 'stv',
+  crOn: 'crn', crVal: 'crv', crRet: 'crr', crSd: 'crd', crCon: 'crc',
+  // stocks value and contribution in multi-asset mode
+  stV: 'stv', stCon: 'stc',
   // allocation display order
   aOrd: 'aord',
 } as const;
@@ -86,14 +86,15 @@ export type ExtraAssetState = {
   val: string;
   ret: string;
   sd: string;
+  con: string;
 };
 
 export const EXTRA_ASSET_DEFAULTS: Record<ExtraAsset, ExtraAssetState> = {
-  bonds:      { on: false, val: '5000',  ret: '4',  sd: '5'  },
-  realestate: { on: false, val: '5000',  ret: '6',  sd: '8'  },
-  gold:       { on: false, val: '2000',  ret: '5',  sd: '15' },
-  silver:     { on: false, val: '1000',  ret: '5',  sd: '25' },
-  crypto:     { on: false, val: '1000',  ret: '20', sd: '80' },
+  bonds:      { on: false, val: '5000',  ret: '4',  sd: '5',  con: '0' },
+  realestate: { on: false, val: '5000',  ret: '6',  sd: '8',  con: '0' },
+  gold:       { on: false, val: '2000',  ret: '5',  sd: '15', con: '0' },
+  silver:     { on: false, val: '1000',  ret: '5',  sd: '25', con: '0' },
+  crypto:     { on: false, val: '1000',  ret: '20', sd: '80', con: '0' },
 };
 
 export const ASSET_COLORS: Record<import('./data/historical').AssetClass, string> = {

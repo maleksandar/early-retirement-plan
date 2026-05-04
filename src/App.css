@@ -1202,3 +1202,18 @@ details[open] .alloc-section-summary::before { transform: rotate(90deg); }
   cursor: default;
   background: color-mix(in srgb, var(--panel-bg) 80%, var(--border) 20%);
 }
+
+.alloc-bar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.alloc-bar-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text);
+  opacity: 0.65;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

@@ -68,11 +68,14 @@ interface InputFormProps {
   // multi-asset
   multiAssetMode: boolean;
   blendedCapital: number;
+  blendedContribution: number;
   blendedReturnNum: number;
   blendedStdDevNum: number;
   extraAssets: Record<ExtraAsset, ExtraAssetState>;
   stocksVal: string;
   setStocksVal: (v: string) => void;
+  stocksCon: string;
+  setStocksCon: (v: string) => void;
   allocOrder: string[];
   setAllocOrder: (v: string[]) => void;
   onToggleAsset: (asset: ExtraAsset, on: boolean) => void;
@@ -255,11 +258,14 @@ export function InputForm({
   onRerunMC,
   multiAssetMode,
   blendedCapital,
+  blendedContribution,
   blendedReturnNum,
   blendedStdDevNum,
   extraAssets,
   stocksVal,
   setStocksVal,
+  stocksCon,
+  setStocksCon,
   allocOrder,
   setAllocOrder,
   onToggleAsset,
@@ -280,10 +286,23 @@ export function InputForm({
     ? parseNum(stocksVal) + EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce((s, a) => s + parseNum(extraAssets[a].val), 0)
     : 0;
 
+  const totalAllocCon = multiAssetMode
+    ? parseNum(stocksCon) + EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce((s, a) => s + parseNum(extraAssets[a].con), 0)
+    : 0;
+
   const barSegments: BarSegment[] = multiAssetMode && activeAssetKeys.length >= 2
     ? activeAssetKeys.map((k) => {
         const val = k === 'stocks' ? parseNum(stocksVal) : parseNum(extraAssets[k as ExtraAsset].val);
         const pct = totalAllocVal > 0 ? (val / totalAllocVal) * 100 : 0;
+        const labelKey = k === 'stocks' ? 'form.assetAllocation.stocksLabel' : ASSET_LABEL_KEYS[k as ExtraAsset];
+        return { key: k, label: tr(lang, labelKey), color: ASSET_COLORS[k as import('../data/historical').AssetClass], value: val, pct };
+      })
+    : [];
+
+  const conBarSegments: BarSegment[] = multiAssetMode && activeAssetKeys.length >= 2 && totalAllocCon > 0
+    ? activeAssetKeys.map((k) => {
+        const val = k === 'stocks' ? parseNum(stocksCon) : parseNum(extraAssets[k as ExtraAsset].con);
+        const pct = totalAllocCon > 0 ? (val / totalAllocCon) * 100 : 0;
         const labelKey = k === 'stocks' ? 'form.assetAllocation.stocksLabel' : ASSET_LABEL_KEYS[k as ExtraAsset];
         return { key: k, label: tr(lang, labelKey), color: ASSET_COLORS[k as import('../data/historical').AssetClass], value: val, pct };
       })
@@ -326,6 +345,29 @@ export function InputForm({
     const next = [...allocOrder];
     [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
     setAllocOrder(next);
+  }
+
+  function handleConDragRebalance(leftKey: string, rightKey: string, deltaValue: number) {
+    const MIN = 0;
+    if (leftKey === 'stocks') {
+      const newLeft = Math.max(MIN, parseNum(stocksCon) + deltaValue);
+      const newRight = Math.max(MIN, parseNum(rightKey === 'stocks' ? stocksCon : extraAssets[rightKey as ExtraAsset].con) - deltaValue);
+      setStocksCon(String(Math.round(newLeft)));
+      if (rightKey !== 'stocks') onUpdateAsset(rightKey as ExtraAsset, 'con', String(Math.round(newRight)));
+    } else if (rightKey === 'stocks') {
+      const leftAsset = leftKey as ExtraAsset;
+      const newLeft = Math.max(MIN, parseNum(extraAssets[leftAsset].con) + deltaValue);
+      const newRight = Math.max(MIN, parseNum(stocksCon) - deltaValue);
+      onUpdateAsset(leftAsset, 'con', String(Math.round(newLeft)));
+      setStocksCon(String(Math.round(newRight)));
+    } else {
+      const leftAsset = leftKey as ExtraAsset;
+      const rightAsset = rightKey as ExtraAsset;
+      const newLeft = Math.max(MIN, parseNum(extraAssets[leftAsset].con) + deltaValue);
+      const newRight = Math.max(MIN, parseNum(extraAssets[rightAsset].con) - deltaValue);
+      onUpdateAsset(leftAsset, 'con', String(Math.round(newLeft)));
+      onUpdateAsset(rightAsset, 'con', String(Math.round(newRight)));
+    }
   }
 
   return (
@@ -381,7 +423,7 @@ export function InputForm({
           </div>
         </div>
 
-        <div className='field'>
+        <div className={`field${multiAssetMode ? ' field--readonly' : ''}`}>
           <label className='field-label' htmlFor='monthlyContribution'>
             <span className='field-label-head'>
               <span className='field-label-text'>{tr(lang, 'form.monthlyContribution.label')}</span>
@@ -393,19 +435,22 @@ export function InputForm({
               id='monthlyContribution'
               type='text'
               inputMode='decimal'
-              value={monthlyContribution}
-              onChange={(e) => setMonthlyContribution(e.target.value)}
-              className={errors.monthlyContribution ? 'input-error' : ''}
+              value={multiAssetMode ? String(Math.round(blendedContribution)) : monthlyContribution}
+              onChange={(e) => !multiAssetMode && setMonthlyContribution(e.target.value)}
+              readOnly={multiAssetMode}
+              className={!multiAssetMode && errors.monthlyContribution ? 'input-error' : ''}
             />
-            <input
-              type='range'
-              min={SLIDERS.monthlyContribution.min}
-              max={SLIDERS.monthlyContribution.max}
-              step={SLIDERS.monthlyContribution.step}
-              value={sliderVal(monthlyContribution, SLIDERS.monthlyContribution)}
-              onChange={(e) => setMonthlyContribution(e.target.value)}
-            />
-            {errors.monthlyContribution && <span className='field-error'>{errors.monthlyContribution}</span>}
+            {!multiAssetMode && (
+              <input
+                type='range'
+                min={SLIDERS.monthlyContribution.min}
+                max={SLIDERS.monthlyContribution.max}
+                step={SLIDERS.monthlyContribution.step}
+                value={sliderVal(monthlyContribution, SLIDERS.monthlyContribution)}
+                onChange={(e) => setMonthlyContribution(e.target.value)}
+              />
+            )}
+            {!multiAssetMode && errors.monthlyContribution && <span className='field-error'>{errors.monthlyContribution}</span>}
           </div>
         </div>
 
@@ -568,6 +613,25 @@ export function InputForm({
                   />
                 </div>
                 <div className='alloc-field'>
+                  <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.contributionLabel')}</label>
+                  <input
+                    type='text'
+                    inputMode='decimal'
+                    value={stocksCon}
+                    onChange={(e) => setStocksCon(e.target.value)}
+                    className={errors.stocks_con ? 'input-error' : ''}
+                  />
+                  <input
+                    type='range'
+                    min={0}
+                    max={ASSET_VAL_SLIDER.max / 10}
+                    step={50}
+                    value={clamp(parseNum(stocksCon), 0, ASSET_VAL_SLIDER.max / 10)}
+                    onChange={(e) => setStocksCon(e.target.value)}
+                  />
+                  {errors.stocks_con && <span className='field-error'>{errors.stocks_con}</span>}
+                </div>
+                <div className='alloc-field'>
                   <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.returnLabel')}</label>
                   <input
                     type='text'
@@ -615,6 +679,7 @@ export function InputForm({
             const a = extraAssets[asset];
             const label = tr(lang, ASSET_LABEL_KEYS[asset]);
             const valErr = errors[`${asset}_val` as keyof AllErrors];
+            const conErr = errors[`${asset}_con` as keyof AllErrors];
             const retErr = errors[`${asset}_ret` as keyof AllErrors];
             const sdErr = errors[`${asset}_sd` as keyof AllErrors];
             return (
@@ -656,6 +721,26 @@ export function InputForm({
                         onChange={(e) => onUpdateAsset(asset, 'val', e.target.value)}
                       />
                       {valErr && <span className='field-error'>{valErr}</span>}
+                    </div>
+
+                    <div className='alloc-field'>
+                      <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.contributionLabel')}</label>
+                      <input
+                        type='text'
+                        inputMode='decimal'
+                        value={a.con}
+                        onChange={(e) => onUpdateAsset(asset, 'con', e.target.value)}
+                        className={conErr ? 'input-error' : ''}
+                      />
+                      <input
+                        type='range'
+                        min={0}
+                        max={ASSET_VAL_SLIDER.max / 10}
+                        step={50}
+                        value={clamp(parseNum(a.con), 0, ASSET_VAL_SLIDER.max / 10)}
+                        onChange={(e) => onUpdateAsset(asset, 'con', e.target.value)}
+                      />
+                      {conErr && <span className='field-error'>{conErr}</span>}
                     </div>
 
                     <div className='alloc-field'>
@@ -720,6 +805,7 @@ export function InputForm({
           {multiAssetMode && (
             <div className='alloc-summary'>
               <span>{tr(lang, 'form.assetAllocation.totalLabel')}: <strong>${Math.round(blendedCapital).toLocaleString()}</strong></span>
+              <span>{tr(lang, 'form.assetAllocation.totalContributionLabel')}: <strong>${Math.round(blendedContribution).toLocaleString()}/mo</strong></span>
               <span>{tr(lang, 'form.assetAllocation.blendedReturnLabel')}: <strong>{blendedReturnNum.toFixed(2)}%</strong></span>
               {mcMode && (
                 <span>{tr(lang, 'form.assetAllocation.blendedStdDevLabel')}: <strong>{blendedStdDevNum.toFixed(2)}%</strong></span>
@@ -727,14 +813,30 @@ export function InputForm({
             </div>
           )}
 
-          {/* Allocation bar (2+ active assets) */}
+          {/* Capital allocation bar */}
           {barSegments.length >= 2 && (
-            <AllocationBar
-              segments={barSegments}
-              onDragRebalance={handleDragRebalance}
-              onMoveLeft={handleMoveLeft}
-              onMoveRight={handleMoveRight}
-            />
+            <div className='alloc-bar-section'>
+              <span className='alloc-bar-title'>{tr(lang, 'form.assetAllocation.totalLabel')}</span>
+              <AllocationBar
+                segments={barSegments}
+                onDragRebalance={handleDragRebalance}
+                onMoveLeft={handleMoveLeft}
+                onMoveRight={handleMoveRight}
+              />
+            </div>
+          )}
+
+          {/* Monthly contribution bar */}
+          {conBarSegments.length >= 2 && (
+            <div className='alloc-bar-section'>
+              <span className='alloc-bar-title'>{tr(lang, 'form.assetAllocation.totalContributionLabel')}</span>
+              <AllocationBar
+                segments={conBarSegments}
+                onDragRebalance={handleConDragRebalance}
+                onMoveLeft={handleMoveLeft}
+                onMoveRight={handleMoveRight}
+              />
+            </div>
           )}
         </div>
       </details>
