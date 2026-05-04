@@ -72,6 +72,8 @@ interface InputFormProps {
   setStocksCon: (v: string) => void;
   allocOrder: string[];
   setAllocOrder: (v: string[]) => void;
+  stocksOn: boolean;
+  onToggleStocks: (on: boolean) => void;
   onToggleAsset: (asset: ExtraAsset, on: boolean) => void;
   onUpdateAsset: (asset: ExtraAsset, field: keyof ExtraAssetState, value: string | boolean) => void;
   cryptoClampNotice: boolean;
@@ -257,6 +259,8 @@ export function InputForm({
   setStocksCon,
   allocOrder,
   setAllocOrder,
+  stocksOn,
+  onToggleStocks,
   onToggleAsset,
   onUpdateAsset,
   cryptoClampNotice,
@@ -266,12 +270,14 @@ export function InputForm({
   const histMode = simMode === 'hist';
   const mcMode = simMode === 'mc';
 
+  const totalActive = (stocksOn ? 1 : 0) + EXTRA_ASSETS.filter((a) => extraAssets[a].on).length;
+
   const activeAssetKeys = allocOrder.filter(
-    (k) => k === 'stocks' || (EXTRA_ASSETS as readonly string[]).includes(k) && extraAssets[k as ExtraAsset].on,
+    (k) => (k === 'stocks' && stocksOn) || ((EXTRA_ASSETS as readonly string[]).includes(k) && extraAssets[k as ExtraAsset].on),
   );
 
-  const totalAllocVal = parseNum(stocksVal) + EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce((s, a) => s + parseNum(extraAssets[a].val), 0);
-  const totalAllocCon = parseNum(stocksCon) + EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce((s, a) => s + parseNum(extraAssets[a].con), 0);
+  const totalAllocVal = (stocksOn ? parseNum(stocksVal) : 0) + EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce((s, a) => s + parseNum(extraAssets[a].val), 0);
+  const totalAllocCon = (stocksOn ? parseNum(stocksCon) : 0) + EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce((s, a) => s + parseNum(extraAssets[a].con), 0);
 
   const barSegments: BarSegment[] = activeAssetKeys.length >= 2
     ? activeAssetKeys.map((k) => {
@@ -416,6 +422,28 @@ export function InputForm({
             {!histMode && errors.annualInflationPercent && (
               <span className='field-error'>{errors.annualInflationPercent}</span>
             )}
+            {mcMode && (
+              <>
+                <label className='field-sub-label' htmlFor='mcInflationStdDev'>{tr(lang, 'form.mc.inflationStdDev.label')}</label>
+                <input
+                  id='mcInflationStdDev'
+                  type='text'
+                  inputMode='decimal'
+                  value={mcInflationStdDev}
+                  onChange={(e) => setMcInflationStdDev(e.target.value)}
+                  className={errors.mcInflationStdDev ? 'input-error' : ''}
+                />
+                <input
+                  type='range'
+                  min={MC_SLIDERS.mcInflationStdDev.min}
+                  max={MC_SLIDERS.mcInflationStdDev.max}
+                  step={MC_SLIDERS.mcInflationStdDev.step}
+                  value={clamp(parseNum(mcInflationStdDev), MC_SLIDERS.mcInflationStdDev.min, MC_SLIDERS.mcInflationStdDev.max)}
+                  onChange={(e) => setMcInflationStdDev(e.target.value)}
+                />
+                {errors.mcInflationStdDev && <span className='field-error'>{errors.mcInflationStdDev}</span>}
+              </>
+            )}
           </div>
         </div>
 
@@ -476,209 +504,224 @@ export function InputForm({
         </div>
 
         <div className='alloc-body'>
-          {/* Stocks row — always shown */}
-          <div className='alloc-asset-row alloc-asset-row--stocks alloc-asset-row--on'>
-              <div className='alloc-asset-header'>
+          <div className='alloc-grid'>
+            {/* Stocks card */}
+            <div className={`alloc-card${stocksOn ? ' alloc-card--on' : ''}`}>
+              <div className='alloc-card-header'>
                 <span className='alloc-asset-swatch' style={{ background: ASSET_COLORS.stocks }} />
                 <span className='alloc-asset-name'>{tr(lang, 'form.assetAllocation.stocksLabel')}</span>
+                <button
+                  type='button'
+                  role='switch'
+                  aria-checked={stocksOn}
+                  className={`alloc-toggle${stocksOn ? ' alloc-toggle--on' : ''}`}
+                  disabled={stocksOn && totalActive === 1}
+                  onClick={() => onToggleStocks(!stocksOn)}
+                >
+                  <span className='alloc-toggle-thumb' />
+                </button>
               </div>
-              <div className='alloc-asset-fields'>
-                <div className='alloc-field'>
-                  <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.valueLabel')}</label>
-                  <input
-                    type='text'
-                    inputMode='decimal'
-                    value={stocksVal}
-                    onChange={(e) => setStocksVal(e.target.value)}
-                  />
-                  <input
-                    type='range'
-                    min={ASSET_VAL_SLIDER.min}
-                    max={ASSET_VAL_SLIDER.max}
-                    step={ASSET_VAL_SLIDER.step}
-                    value={clamp(parseNum(stocksVal), ASSET_VAL_SLIDER.min, ASSET_VAL_SLIDER.max)}
-                    onChange={(e) => setStocksVal(e.target.value)}
-                  />
-                </div>
-                <div className='alloc-field'>
-                  <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.contributionLabel')}</label>
-                  <input
-                    type='text'
-                    inputMode='decimal'
-                    value={stocksCon}
-                    onChange={(e) => setStocksCon(e.target.value)}
-                    className={errors.stocks_con ? 'input-error' : ''}
-                  />
-                  <input
-                    type='range'
-                    min={0}
-                    max={ASSET_VAL_SLIDER.max / 10}
-                    step={50}
-                    value={clamp(parseNum(stocksCon), 0, ASSET_VAL_SLIDER.max / 10)}
-                    onChange={(e) => setStocksCon(e.target.value)}
-                  />
-                  {errors.stocks_con && <span className='field-error'>{errors.stocks_con}</span>}
-                </div>
-                <div className='alloc-field'>
-                  <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.returnLabel')}</label>
-                  <input
-                    type='text'
-                    inputMode='decimal'
-                    value={annualReturnPercent}
-                    onChange={(e) => setAnnualReturnPercent(e.target.value)}
-                    disabled={histMode}
-                  />
-                  {!histMode && (
-                    <input
-                      type='range'
-                      min={ASSET_RETURN_SLIDER.min}
-                      max={ASSET_RETURN_SLIDER.max}
-                      step={ASSET_RETURN_SLIDER.step}
-                      value={clamp(parseNum(annualReturnPercent), ASSET_RETURN_SLIDER.min, ASSET_RETURN_SLIDER.max)}
-                      onChange={(e) => setAnnualReturnPercent(e.target.value)}
-                    />
-                  )}
-                </div>
-                {mcMode && (
+              {stocksOn && (
+                <div className='alloc-asset-fields'>
                   <div className='alloc-field'>
-                    <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.stdDevLabel')}</label>
+                    <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.valueLabel')}</label>
                     <input
                       type='text'
                       inputMode='decimal'
-                      value={mcReturnStdDev}
-                      onChange={(e) => setMcReturnStdDev(e.target.value)}
+                      value={stocksVal}
+                      onChange={(e) => setStocksVal(e.target.value)}
                     />
                     <input
                       type='range'
-                      min={MC_SLIDERS.mcReturnStdDev.min}
-                      max={MC_SLIDERS.mcReturnStdDev.max}
-                      step={MC_SLIDERS.mcReturnStdDev.step}
-                      value={clamp(parseNum(mcReturnStdDev), MC_SLIDERS.mcReturnStdDev.min, MC_SLIDERS.mcReturnStdDev.max)}
-                      onChange={(e) => setMcReturnStdDev(e.target.value)}
+                      min={ASSET_VAL_SLIDER.min}
+                      max={ASSET_VAL_SLIDER.max}
+                      step={ASSET_VAL_SLIDER.step}
+                      value={clamp(parseNum(stocksVal), ASSET_VAL_SLIDER.min, ASSET_VAL_SLIDER.max)}
+                      onChange={(e) => setStocksVal(e.target.value)}
                     />
                   </div>
-                )}
-              </div>
+                  <div className='alloc-field'>
+                    <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.contributionLabel')}</label>
+                    <input
+                      type='text'
+                      inputMode='decimal'
+                      value={stocksCon}
+                      onChange={(e) => setStocksCon(e.target.value)}
+                      className={errors.stocks_con ? 'input-error' : ''}
+                    />
+                    <input
+                      type='range'
+                      min={0}
+                      max={ASSET_VAL_SLIDER.max / 10}
+                      step={50}
+                      value={clamp(parseNum(stocksCon), 0, ASSET_VAL_SLIDER.max / 10)}
+                      onChange={(e) => setStocksCon(e.target.value)}
+                    />
+                    {errors.stocks_con && <span className='field-error'>{errors.stocks_con}</span>}
+                  </div>
+                  <div className='alloc-field'>
+                    <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.returnLabel')}</label>
+                    <input
+                      type='text'
+                      inputMode='decimal'
+                      value={annualReturnPercent}
+                      onChange={(e) => setAnnualReturnPercent(e.target.value)}
+                      disabled={histMode}
+                    />
+                    {!histMode && (
+                      <input
+                        type='range'
+                        min={ASSET_RETURN_SLIDER.min}
+                        max={ASSET_RETURN_SLIDER.max}
+                        step={ASSET_RETURN_SLIDER.step}
+                        value={clamp(parseNum(annualReturnPercent), ASSET_RETURN_SLIDER.min, ASSET_RETURN_SLIDER.max)}
+                        onChange={(e) => setAnnualReturnPercent(e.target.value)}
+                      />
+                    )}
+                  </div>
+                  {mcMode && (
+                    <div className='alloc-field'>
+                      <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.stdDevLabel')}</label>
+                      <input
+                        type='text'
+                        inputMode='decimal'
+                        value={mcReturnStdDev}
+                        onChange={(e) => setMcReturnStdDev(e.target.value)}
+                      />
+                      <input
+                        type='range'
+                        min={MC_SLIDERS.mcReturnStdDev.min}
+                        max={MC_SLIDERS.mcReturnStdDev.max}
+                        step={MC_SLIDERS.mcReturnStdDev.step}
+                        value={clamp(parseNum(mcReturnStdDev), MC_SLIDERS.mcReturnStdDev.min, MC_SLIDERS.mcReturnStdDev.max)}
+                        onChange={(e) => setMcReturnStdDev(e.target.value)}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-          {/* Extra asset toggles */}
-          {EXTRA_ASSETS.map((asset) => {
-            const a = extraAssets[asset];
-            const label = tr(lang, ASSET_LABEL_KEYS[asset]);
-            const valErr = errors[`${asset}_val` as keyof AllErrors];
-            const conErr = errors[`${asset}_con` as keyof AllErrors];
-            const retErr = errors[`${asset}_ret` as keyof AllErrors];
-            const sdErr = errors[`${asset}_sd` as keyof AllErrors];
-            return (
-              <div key={asset} className={`alloc-asset-row${a.on ? ' alloc-asset-row--on' : ''}`}>
-                <div className='alloc-asset-header'>
-                  <span className='alloc-asset-swatch' style={{ background: ASSET_COLORS[asset] }} />
-                  <label className='alloc-toggle-label' htmlFor={`toggle-${asset}`}>
-                    {label}
-                  </label>
-                  <button
-                    id={`toggle-${asset}`}
-                    type='button'
-                    role='switch'
-                    aria-checked={a.on}
-                    className={`alloc-toggle${a.on ? ' alloc-toggle--on' : ''}`}
-                    onClick={() => onToggleAsset(asset, !a.on)}
-                  >
-                    <span className='alloc-toggle-thumb' />
-                  </button>
-                </div>
+            {/* Extra asset cards */}
+            {EXTRA_ASSETS.map((asset) => {
+              const a = extraAssets[asset];
+              const label = tr(lang, ASSET_LABEL_KEYS[asset]);
+              const valErr = errors[`${asset}_val` as keyof AllErrors];
+              const conErr = errors[`${asset}_con` as keyof AllErrors];
+              const retErr = errors[`${asset}_ret` as keyof AllErrors];
+              const sdErr = errors[`${asset}_sd` as keyof AllErrors];
+              return (
+                <div key={asset} className={`alloc-card${a.on ? ' alloc-card--on' : ''}`}>
+                  <div className='alloc-card-header'>
+                    <span className='alloc-asset-swatch' style={{ background: ASSET_COLORS[asset] }} />
+                    <label className='alloc-toggle-label' htmlFor={`toggle-${asset}`}>
+                      {label}
+                    </label>
+                    <button
+                      id={`toggle-${asset}`}
+                      type='button'
+                      role='switch'
+                      aria-checked={a.on}
+                      className={`alloc-toggle${a.on ? ' alloc-toggle--on' : ''}`}
+                      disabled={a.on && totalActive === 1}
+                      onClick={() => onToggleAsset(asset, !a.on)}
+                    >
+                      <span className='alloc-toggle-thumb' />
+                    </button>
+                  </div>
 
-                {a.on && (
-                  <div className='alloc-asset-fields'>
-                    <div className='alloc-field'>
-                      <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.valueLabel')}</label>
-                      <input
-                        type='text'
-                        inputMode='decimal'
-                        value={a.val}
-                        onChange={(e) => onUpdateAsset(asset, 'val', e.target.value)}
-                        className={valErr ? 'input-error' : ''}
-                      />
-                      <input
-                        type='range'
-                        min={ASSET_VAL_SLIDER.min}
-                        max={ASSET_VAL_SLIDER.max}
-                        step={ASSET_VAL_SLIDER.step}
-                        value={clamp(parseNum(a.val), ASSET_VAL_SLIDER.min, ASSET_VAL_SLIDER.max)}
-                        onChange={(e) => onUpdateAsset(asset, 'val', e.target.value)}
-                      />
-                      {valErr && <span className='field-error'>{valErr}</span>}
-                    </div>
-
-                    <div className='alloc-field'>
-                      <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.contributionLabel')}</label>
-                      <input
-                        type='text'
-                        inputMode='decimal'
-                        value={a.con}
-                        onChange={(e) => onUpdateAsset(asset, 'con', e.target.value)}
-                        className={conErr ? 'input-error' : ''}
-                      />
-                      <input
-                        type='range'
-                        min={0}
-                        max={ASSET_VAL_SLIDER.max / 10}
-                        step={50}
-                        value={clamp(parseNum(a.con), 0, ASSET_VAL_SLIDER.max / 10)}
-                        onChange={(e) => onUpdateAsset(asset, 'con', e.target.value)}
-                      />
-                      {conErr && <span className='field-error'>{conErr}</span>}
-                    </div>
-
-                    <div className='alloc-field'>
-                      <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.returnLabel')}</label>
-                      <input
-                        type='text'
-                        inputMode='decimal'
-                        value={a.ret}
-                        onChange={(e) => onUpdateAsset(asset, 'ret', e.target.value)}
-                        className={retErr ? 'input-error' : ''}
-                        disabled={histMode}
-                      />
-                      {!histMode && (
-                        <input
-                          type='range'
-                          min={ASSET_RETURN_SLIDER.min}
-                          max={ASSET_RETURN_SLIDER.max}
-                          step={ASSET_RETURN_SLIDER.step}
-                          value={clamp(parseNum(a.ret), ASSET_RETURN_SLIDER.min, ASSET_RETURN_SLIDER.max)}
-                          onChange={(e) => onUpdateAsset(asset, 'ret', e.target.value)}
-                        />
-                      )}
-                      {retErr && <span className='field-error'>{retErr}</span>}
-                    </div>
-
-                    {mcMode && (
+                  {a.on && (
+                    <div className='alloc-asset-fields'>
                       <div className='alloc-field'>
-                        <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.stdDevLabel')}</label>
+                        <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.valueLabel')}</label>
                         <input
                           type='text'
                           inputMode='decimal'
-                          value={a.sd}
-                          onChange={(e) => onUpdateAsset(asset, 'sd', e.target.value)}
-                          className={sdErr ? 'input-error' : ''}
+                          value={a.val}
+                          onChange={(e) => onUpdateAsset(asset, 'val', e.target.value)}
+                          className={valErr ? 'input-error' : ''}
                         />
                         <input
                           type='range'
-                          min={ASSET_SD_SLIDER.min}
-                          max={ASSET_SD_SLIDER.max}
-                          step={ASSET_SD_SLIDER.step}
-                          value={clamp(parseNum(a.sd), ASSET_SD_SLIDER.min, ASSET_SD_SLIDER.max)}
-                          onChange={(e) => onUpdateAsset(asset, 'sd', e.target.value)}
+                          min={ASSET_VAL_SLIDER.min}
+                          max={ASSET_VAL_SLIDER.max}
+                          step={ASSET_VAL_SLIDER.step}
+                          value={clamp(parseNum(a.val), ASSET_VAL_SLIDER.min, ASSET_VAL_SLIDER.max)}
+                          onChange={(e) => onUpdateAsset(asset, 'val', e.target.value)}
                         />
-                        {sdErr && <span className='field-error'>{sdErr}</span>}
+                        {valErr && <span className='field-error'>{valErr}</span>}
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+
+                      <div className='alloc-field'>
+                        <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.contributionLabel')}</label>
+                        <input
+                          type='text'
+                          inputMode='decimal'
+                          value={a.con}
+                          onChange={(e) => onUpdateAsset(asset, 'con', e.target.value)}
+                          className={conErr ? 'input-error' : ''}
+                        />
+                        <input
+                          type='range'
+                          min={0}
+                          max={ASSET_VAL_SLIDER.max / 10}
+                          step={50}
+                          value={clamp(parseNum(a.con), 0, ASSET_VAL_SLIDER.max / 10)}
+                          onChange={(e) => onUpdateAsset(asset, 'con', e.target.value)}
+                        />
+                        {conErr && <span className='field-error'>{conErr}</span>}
+                      </div>
+
+                      <div className='alloc-field'>
+                        <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.returnLabel')}</label>
+                        <input
+                          type='text'
+                          inputMode='decimal'
+                          value={a.ret}
+                          onChange={(e) => onUpdateAsset(asset, 'ret', e.target.value)}
+                          className={retErr ? 'input-error' : ''}
+                          disabled={histMode}
+                        />
+                        {!histMode && (
+                          <input
+                            type='range'
+                            min={ASSET_RETURN_SLIDER.min}
+                            max={ASSET_RETURN_SLIDER.max}
+                            step={ASSET_RETURN_SLIDER.step}
+                            value={clamp(parseNum(a.ret), ASSET_RETURN_SLIDER.min, ASSET_RETURN_SLIDER.max)}
+                            onChange={(e) => onUpdateAsset(asset, 'ret', e.target.value)}
+                          />
+                        )}
+                        {retErr && <span className='field-error'>{retErr}</span>}
+                      </div>
+
+                      {mcMode && (
+                        <div className='alloc-field'>
+                          <label className='alloc-field-label'>{tr(lang, 'form.assetAllocation.stdDevLabel')}</label>
+                          <input
+                            type='text'
+                            inputMode='decimal'
+                            value={a.sd}
+                            onChange={(e) => onUpdateAsset(asset, 'sd', e.target.value)}
+                            className={sdErr ? 'input-error' : ''}
+                          />
+                          <input
+                            type='range'
+                            min={ASSET_SD_SLIDER.min}
+                            max={ASSET_SD_SLIDER.max}
+                            step={ASSET_SD_SLIDER.step}
+                            value={clamp(parseNum(a.sd), ASSET_SD_SLIDER.min, ASSET_SD_SLIDER.max)}
+                            onChange={(e) => onUpdateAsset(asset, 'sd', e.target.value)}
+                          />
+                          {sdErr && <span className='field-error'>{sdErr}</span>}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
           {/* Crypto clamp notice */}
           {cryptoClampNotice && (
@@ -821,38 +864,6 @@ export function InputForm({
                     </option>
                   ))}
                 </select>
-              </div>
-            </div>
-
-            <div className='field'>
-              <label className='field-label' htmlFor='mcInflationStdDev'>
-                <span className='field-label-head'>
-                  <span className='field-label-text'>{tr(lang, 'form.mc.inflationStdDev.label')}</span>
-                  <FieldTooltip text={tr(lang, 'form.mc.inflationStdDev.tip')} />
-                </span>
-              </label>
-              <div className='field-control'>
-                <input
-                  id='mcInflationStdDev'
-                  type='text'
-                  inputMode='decimal'
-                  value={mcInflationStdDev}
-                  onChange={(e) => setMcInflationStdDev(e.target.value)}
-                  className={errors.mcInflationStdDev ? 'input-error' : ''}
-                />
-                <input
-                  type='range'
-                  min={MC_SLIDERS.mcInflationStdDev.min}
-                  max={MC_SLIDERS.mcInflationStdDev.max}
-                  step={MC_SLIDERS.mcInflationStdDev.step}
-                  value={clamp(
-                    parseNum(mcInflationStdDev),
-                    MC_SLIDERS.mcInflationStdDev.min,
-                    MC_SLIDERS.mcInflationStdDev.max,
-                  )}
-                  onChange={(e) => setMcInflationStdDev(e.target.value)}
-                />
-                {errors.mcInflationStdDev && <span className='field-error'>{errors.mcInflationStdDev}</span>}
               </div>
             </div>
           </div>

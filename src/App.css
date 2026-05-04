@@ -135,7 +135,7 @@
 /* ── Form grid ── */
 
 .form-grid {
-  --field-control-w: 8.75rem;
+  --field-control-w: 7rem;
 
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -456,6 +456,15 @@
   font-weight: 400;
   margin-top: 0.15rem;
   opacity: 0.85;
+}
+
+.field-sub-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text);
+  font-weight: 400;
+  margin-top: 0.4rem;
+  opacity: 0.75;
 }
 
 /* ── Monte Carlo section ── */
@@ -925,22 +934,39 @@
   gap: 0.75rem;
 }
 
-/* Asset row */
-.alloc-asset-row {
+/* Asset grid */
+.alloc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+@media (max-width: 560px) {
+  .alloc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Asset card */
+.alloc-card {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
   transition: background 0.1s;
 }
 
-.alloc-asset-row--on {
+.alloc-card--on {
   background: color-mix(in srgb, var(--panel-bg) 90%, var(--chart-capital) 10%);
 }
 
-.alloc-asset-row--stocks {
-  background: color-mix(in srgb, var(--panel-bg) 90%, var(--chart-capital) 10%);
+.alloc-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 28px;
 }
 
+/* Keep old alloc-asset-row for any backward compat (not used in grid layout) */
 .alloc-asset-header {
   display: flex;
   align-items: center;
@@ -1024,7 +1050,7 @@
 
 .alloc-field input[type='text'] {
   width: 100%;
-  max-width: 10rem;
+  max-width: 100%;
   padding: 0.3rem 0.5rem;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -1035,7 +1061,7 @@
 
 .alloc-field input[type='range'] {
   width: 100%;
-  max-width: 14rem;
+  max-width: 100%;
   margin-top: 0.1rem;
 }
 

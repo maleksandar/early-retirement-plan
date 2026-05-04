@@ -71,6 +71,7 @@ export default function App() {
   );
 
   // Asset allocation state
+  const [stocksOn, setStocksOn] = useState(() => urlInit.stocksOn !== false);
   const [extraAssets, setExtraAssets] = useState<Record<ExtraAsset, ExtraAssetState>>(
     () => urlInit.extraAssets ?? { ...EXTRA_ASSET_DEFAULTS },
   );
@@ -149,51 +150,57 @@ export default function App() {
   }, [xMode, ageYears]);
 
   const blendedCapital = useMemo(() => {
-    const base = parseNum(stocksVal);
+    const base = stocksOn ? parseNum(stocksVal) : 0;
     return EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce(
       (s, a) => s + parseNum(extraAssets[a].val),
       base,
     );
-  }, [stocksVal, extraAssets]);
+  }, [stocksOn, stocksVal, extraAssets]);
 
   const blendedReturnNum = useMemo(() => {
     if (blendedCapital <= 0) return parseNum(annualReturnPercent);
-    const stocksWeight = parseNum(stocksVal) / blendedCapital;
-    let w = stocksWeight * parseNum(annualReturnPercent);
+    let w = 0;
+    if (stocksOn) {
+      w += (parseNum(stocksVal) / blendedCapital) * parseNum(annualReturnPercent);
+    }
     for (const a of EXTRA_ASSETS) {
       if (!extraAssets[a].on) continue;
       w += (parseNum(extraAssets[a].val) / blendedCapital) * parseNum(extraAssets[a].ret);
     }
     return w;
-  }, [blendedCapital, stocksVal, annualReturnPercent, extraAssets]);
+  }, [blendedCapital, stocksOn, stocksVal, annualReturnPercent, extraAssets]);
 
   const blendedStdDevNum = useMemo(() => {
     if (blendedCapital <= 0) return parseNum(mcReturnStdDev);
-    const stocksWeight = parseNum(stocksVal) / blendedCapital;
-    let w = stocksWeight * parseNum(mcReturnStdDev);
+    let w = 0;
+    if (stocksOn) {
+      w += (parseNum(stocksVal) / blendedCapital) * parseNum(mcReturnStdDev);
+    }
     for (const a of EXTRA_ASSETS) {
       if (!extraAssets[a].on) continue;
       w += (parseNum(extraAssets[a].val) / blendedCapital) * parseNum(extraAssets[a].sd);
     }
     return w;
-  }, [blendedCapital, stocksVal, mcReturnStdDev, extraAssets]);
+  }, [blendedCapital, stocksOn, stocksVal, mcReturnStdDev, extraAssets]);
 
   const blendedContribution = useMemo(() => {
+    const base = stocksOn ? parseNum(stocksCon) : 0;
     return EXTRA_ASSETS.filter((a) => extraAssets[a].on).reduce(
       (s, a) => s + parseNum(extraAssets[a].con),
-      parseNum(stocksCon),
+      base,
     );
-  }, [stocksCon, extraAssets]);
+  }, [stocksOn, stocksCon, extraAssets]);
 
   const assetAllocations = useMemo((): AssetAllocation[] => {
-    const allocs: AssetAllocation[] = [
-      {
+    const allocs: AssetAllocation[] = [];
+    if (stocksOn) {
+      allocs.push({
         assetClass: 'stocks',
         value: parseNum(stocksVal),
         annualReturnPercent: parseNum(annualReturnPercent),
         returnStdDevPercent: parseNum(mcReturnStdDev),
-      },
-    ];
+      });
+    }
     for (const a of EXTRA_ASSETS) {
       if (!extraAssets[a].on) continue;
       allocs.push({
@@ -204,7 +211,7 @@ export default function App() {
       });
     }
     return allocs;
-  }, [stocksVal, annualReturnPercent, mcReturnStdDev, extraAssets]);
+  }, [stocksOn, stocksVal, annualReturnPercent, mcReturnStdDev, extraAssets]);
 
   // Effective hist start year min (2010 when crypto active)
   const histMinYear = useMemo(
@@ -234,6 +241,7 @@ export default function App() {
       mcReturnStdDev,
       mcInflationStdDev,
       histStartYear,
+      stocksOn,
       stocksVal,
       stocksCon,
       extraAssets,
@@ -254,6 +262,7 @@ export default function App() {
     mcReturnStdDev,
     mcInflationStdDev,
     histStartYear,
+    stocksOn,
     stocksVal,
     stocksCon,
     extraAssets,
@@ -486,7 +495,19 @@ export default function App() {
     }));
   }
 
+  function handleToggleStocks(on: boolean) {
+    if (!on) {
+      const anyExtraOn = EXTRA_ASSETS.some((a) => extraAssets[a].on);
+      if (!anyExtraOn) return; // can't turn off last active asset
+    }
+    setStocksOn(on);
+  }
+
   function handleToggleAsset(asset: ExtraAsset, on: boolean) {
+    if (!on) {
+      const otherExtrasOn = EXTRA_ASSETS.filter((a) => a !== asset).some((a) => extraAssets[a].on);
+      if (!stocksOn && !otherExtrasOn) return; // can't turn off last active asset
+    }
     setCryptoClampNotice(false);
     updateExtraAsset(asset, 'on', on);
   }
@@ -559,12 +580,14 @@ export default function App() {
         blendedReturnNum={blendedReturnNum}
         blendedStdDevNum={blendedStdDevNum}
         extraAssets={extraAssets}
+        stocksOn={stocksOn}
         stocksVal={stocksVal}
         setStocksVal={setStocksVal}
         stocksCon={stocksCon}
         setStocksCon={setStocksCon}
         allocOrder={allocOrder}
         setAllocOrder={setAllocOrder}
+        onToggleStocks={handleToggleStocks}
         onToggleAsset={handleToggleAsset}
         onUpdateAsset={updateExtraAsset}
         cryptoClampNotice={cryptoClampNotice}

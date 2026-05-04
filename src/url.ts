@@ -35,6 +35,7 @@ export function readUrlState(): {
   mcReturnStdDev?: string;
   mcInflationStdDev?: string;
   histStartYear?: number;
+  stocksOn?: boolean;
   stocksVal?: string;
   stocksCon?: string;
   extraAssets?: Record<ExtraAsset, ExtraAssetState>;
@@ -69,6 +70,7 @@ export function readUrlState(): {
     if (hy >= HIST_FIRST_YEAR && hy <= HIST_LAST_YEAR) o.histStartYear = hy;
   }
 
+  if (g(QP.stOn) === '0') o.stocksOn = false;
   if (g(QP.stV) != null && g(QP.stV) !== '') o.stocksVal = g(QP.stV)!;
   if (g(QP.stCon) != null && g(QP.stCon) !== '') o.stocksCon = g(QP.stCon)!;
 
@@ -122,6 +124,7 @@ export function buildSearchParams(state: {
   mcReturnStdDev: string;
   mcInflationStdDev: string;
   histStartYear: number;
+  stocksOn: boolean;
   stocksVal: string;
   stocksCon: string;
   extraAssets: Record<ExtraAsset, ExtraAssetState>;
@@ -145,6 +148,7 @@ export function buildSearchParams(state: {
     sp.set(QP.hy, String(state.histStartYear));
   }
 
+  if (!state.stocksOn) sp.set(QP.stOn, '0');
   sp.set(QP.stV, state.stocksVal);
   sp.set(QP.stCon, state.stocksCon);
   for (const asset of EXTRA_ASSETS) {

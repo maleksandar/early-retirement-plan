@@ -64,7 +64,7 @@ export const QP = {
   // crypto
   crOn: 'crn', crVal: 'crv', crRet: 'crr', crSd: 'crd', crCon: 'crc',
   // stocks value and contribution in multi-asset mode
-  stV: 'stv', stCon: 'stc',
+  stV: 'stv', stCon: 'stc', stOn: 'sto',
   // allocation display order
   aOrd: 'aord',
 } as const;
